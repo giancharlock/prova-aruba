@@ -1,0 +1,123 @@
+server:
+  port: 9020
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: "dbmanager"
+  profiles:
+    active: "prod"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/invoice
+    driverClassName: org.postgresql.Driver
+    username: invoice_user
+    password: invoice_pwd
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  depends_on:
+    - postgres
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+
+  # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
+  kafka:
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  # --- Spring Cloud Stream Configuration ---
+  cloud:
+    stream:
+      function:
+        definition: consumeIncomingInvoice;consumeSdiNotification
+      bindings:
+        consumeIncomingInvoice-in-0:
+          destination: INCOMING_INVOICE
+        consumeSdiNotification-in-0:
+          destination: DSI_NOTIFICATION
+        publishSavedInvoice-out-0:
+          destination: SAVED_INCOMING_INVOICE
+        publishOutgoingInvoice-out-0:
+          destination: OUTGOING_INVOICE
+      kafka:
+        binder:
+          brokers: localhost:9092
+          producer-properties:
+            retries: 3
+            retry.backoff.ms: 1000
+            delivery.timeout.ms: 120000
+        bindings:
+          consumeIncomingInvoice-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: incoming-invoice.DLT
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              back-off-max-interval: 10000
+              back-off-multiplier: 2.0
+          consumeSdiNotification-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: sdi-notification.DLT
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              back-off-max-interval: 10000
+              back-off-multiplier: 2.0
+          business-dlt-out-0:
+            destination: business.DLT
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      access: unrestricted
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+info:
+  app:
+    name: "dbmanager"
+    description: "Invoice App DbManager Application"
+    version: "1.0.0"
+
+logging:
+  level:
+    com:
+      experis:
+        dbmanager: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]" 

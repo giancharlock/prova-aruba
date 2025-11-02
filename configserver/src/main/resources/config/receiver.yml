@@ -1,0 +1,10 @@
+build:
+  version: "0.0.1"
+
+receiver:
+  message: "Welcome to InvoiceApp Receiver Microservice DEV"
+  contactDetails:
+    name: "Giancarlo Cadei - Developer"
+    email: "giancarlo.cadei@it.experis.com"
+  onCallSupport:
+    - (+39) 320 60 20 839

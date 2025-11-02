@@ -1,0 +1,10 @@
+build:
+  version: "1.0"
+
+receiver:
+  message: "Welcome to InvoiceApp DbManager Microservice QA"
+  contactDetails:
+    name: "Giancarlo Cadei - Developer"
+    email: "giancarlo.cadei@it.experis.com"
+  onCallSupport:
+    - (+39) 320 60 20 839

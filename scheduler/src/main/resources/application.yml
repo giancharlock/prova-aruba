@@ -1,0 +1,68 @@
+server:
+  port: 9030
+spring:
+  application:
+    name: "scheduler"
+  profiles:
+    active: "prod"
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+  cloud:
+    stream:
+      function:
+        definition: consumeAllInvoiceEvents
+      bindings:
+        # Consumer (ascolta da più topic)
+        consumeAllInvoiceEvents-in-0:
+          destination: INCOMING_INVOICE,INVOICE_VALID,INVOICE_INVALID,INVOICE_SENT,INVOICE_CANNOT_BE_SENT
+          group: ${spring.application.name}
+      kafka:
+        binder:
+          brokers: kafka:9092
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      access: unrestricted
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+info:
+  app:
+    name: "scheduler"
+    description: "Invoice App Scheduler Application"
+    version: "1.0.0"
+
+logging:
+  level:
+    com:
+      experis:
+        scheduler: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
