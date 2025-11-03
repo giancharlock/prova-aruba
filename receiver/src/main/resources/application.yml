@@ -13,8 +13,6 @@ spring:
     name: "receiver"
   profiles:
     active: "prod"
-  config:
-    import: "optional:configserver:http://localhost:8071/"
   cloud:
     openfeign:
       circuitbreaker:

@@ -6,12 +6,10 @@ spring:
     name: "scheduler"
   profiles:
     active: "prod"
-  config:
-    import: "optional:configserver:http://localhost:8071/"
 
   # Configurazione Kafka per il DLT Consumer (Job 1)
   kafka:
-    bootstrap-servers: localhost:9092 # Assumo sia gestito da configserver in prod
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: "scheduler-dlt-consumer"
       auto-offset-reset: earliest

@@ -13,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableFeignClients
-// @EnableJpaAuditing(auditorAwareRef = "auditAwareImpl") // Rimosso se non c'è DB
 @OpenAPIDefinition(
         info = @Info(
                 title = "Receiver microservice REST API Documentation",

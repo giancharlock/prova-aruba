@@ -280,13 +280,13 @@ services:
       file: common-config.yml
       service: microservice-base-config
 
-  configserver:
-    image: "giancharlock/configserver:s1"
-    container_name: configserver-ms
+  eurekaserver:
+    image: "giancharlock/eurekaserver:s1"
+    container_name: eurekaserver-ms
     ports:
-      - "8071:8071"
+      - "8761:8761"
     healthcheck:
-      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      test: "curl --fail --silent localhost:8761/actuator/health || exit 1"
       interval: 20s
       timeout: 5s
       retries: 20
@@ -295,28 +295,8 @@ services:
       file: common-config.yml
       service: microservice-base-config
     environment:
-      OTEL_SERVICE_NAME: "configserver"
-
-  eurekaserver:
-    image: "giancharlock/eurekaserver:s1"
-    container_name: eurekaserver-ms
-    ports:
-      - "8761:8761"
-    healthcheck:
-      test: "curl --fail --silent localhost:8761/actuator/health/readiness | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-configserver-config
-    environment:
       SPRING_APPLICATION_NAME: "eurekaserver"
       OTEL_SERVICE_NAME: "eurekaserver"
-    depends_on:
-      configserver:
-        condition: service_healthy
 
   receiver:
     image: "giancharlock/receiver:s1"
@@ -328,8 +308,6 @@ services:
       retries: 20
       start_period: 10s
     depends_on:
-      configserver:
-        condition: service_healthy
       eurekaserver:
         condition: service_healthy
     environment:
@@ -344,8 +322,6 @@ services:
     image: "giancharlock/dbmanager:s1"
     container_name: dbmanager-ms
     depends_on:
-      configserver:
-        condition: service_healthy
       eurekaserver:
         condition: service_healthy
       receiver:
@@ -368,7 +344,7 @@ services:
     image: "giancharlock/sender:s1"
     container_name: sender-ms
     healthcheck:
-      test: "curl --fail --silent localhost:9010/actuator/health/readiness | grep UP || exit 1"
+      test: "curl --fail --silent localhost:9010/actuator/health || exit 1"
       interval: 20s
       timeout: 5s
       retries: 20
@@ -381,11 +357,8 @@ services:
       file: common-config.yml
       service: microservice-eureka-config
     depends_on:
-      configserver:
-        condition: service_healthy
       eurekaserver:
-        condition:
-          service_healthy
+        condition: service_healthy
       dbmanager:
         condition: service_healthy
 

@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: "scheduler-test"
+
+  # Disabilitiamo i servizi cloud (Config Server, Eureka) per i test unitari
+  cloud:
+    config:
+      enabled: false
+
+  # Colleghiamo Kafka al broker "embedded" fornito da spring-kafka-test
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    consumer:
+      group-id: "scheduler-test-group"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+eureka:
+  client:
+    enabled: false
+
+# Proprietà per i job usate nei test
+app:
+  scheduler:
+    # URL fittizio, tanto il client API (DbManagerClient) sarà mockato
+    dbmanager-url: "http://mock-dbmanager:9020/api"
+    # Usiamo la cartella 'target' per i report di test, che viene pulita ad ogni build
+    dlt-report-path: "target/test-reports/dlt_report.csv"
+    invoice-report-path: "target/test-reports/invoice_status_report.csv"
+    dlt-job:
+      cron: "0 0 1 * * ?" # Cron irrilevante, chiameremo i job manualmente
+      topics:
+        - "test-dlt-job.DLT" # Un topic DLT solo per il test
+      poll-timeout: 1000 # 1 secondo di attesa
+    invoice-report-job:
+      cron: "0 0 1 * * ?" # Cron irrilevante

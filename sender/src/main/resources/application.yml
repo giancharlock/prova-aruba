@@ -2,14 +2,13 @@ server:
   port: 9010
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   application:
     name: "sender"
   profiles:
     active: "prod"
-
-  # --- Configurazione per Config Server ed Eureka ---
-  config:
-    import: "optional:configserver:http://localhost:8071/"
 
   # --- Configurazione Mail Server Locale (per simulare invio SdI) ---
   mail:
@@ -22,9 +21,12 @@ spring:
 
   # --- Configurazione Spring Cloud Stream ---
   cloud:
-    function:
-      definition: consumeOutgoingInvoice
+    openfeign:
+      circuitbreaker:
+        enabled: true
     stream:
+      function:
+        definition: consumeOutgoingInvoice
       bindings:
         # Consumer: Legge le fatture da inviare
         consumeOutgoingInvoice-in-0:
@@ -32,8 +34,8 @@ spring:
           group: ${spring.application.name}
           consumer:
             max-attempts: 3 # Ritenta 3 volte in caso di errore
-            back-off-initial-interval: 1000
-            back-off-max-interval: 5000
+            back-off-initial-interval: 100
+            back-off-max-interval: 500
             back-off-multiplier: 2.0
             enableDlq: true
             dlqName: sender-outgoing.DLT
@@ -54,6 +56,12 @@ eureka:
     serviceUrl:
       defaultZone: http://eurekaserver:8761/eureka/
 
+info:
+  app:
+    name: "sender"
+    description: "Invoice App Sender Application"
+    version: "1.0.0"
+
 logging:
   level:
     com:
@@ -62,3 +70,30 @@ logging:
     org.springframework.mail: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 2
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+
+resilience4j.retry:
+  configs:
+    default:
+      maxAttempts: 3
+      waitDuration: 500
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      ignoreExceptions:
+        - java.lang.NullPointerException
+      retryExceptions:
+        - java.util.concurrent.TimeoutException
+
+resilience4j.ratelimiter:
+  configs:
+    default:
+      timeoutDuration: 1000
+      limitRefreshPeriod: 5000
+      limitForPeriod: 1

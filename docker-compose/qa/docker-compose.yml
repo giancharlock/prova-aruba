@@ -266,31 +266,11 @@ services:
       file: common-config.yml
       service: microservice-base-config
 
-  configserver:
-    image: "giancharlock/configserver:s1"
-    container_name: configserver-ms
-    ports:
-      - "8071:8071"
-    healthcheck:
-      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      OTEL_SERVICE_NAME: "configserver"
-
   eurekaserver:
     image: "giancharlock/eurekaserver:s1"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
-    depends_on:
-      configserver:
-        condition: service_healthy
     healthcheck:
       test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
       interval: 20s
@@ -299,7 +279,7 @@ services:
       start_period: 10s
     extends:
       file: common-config.yml
-      service: microservice-configserver-config
+      service: microservice-base-config
     environment:
       SPRING_APPLICATION_NAME: "eurekaserver"
       OTEL_SERVICE_NAME: "eurekaserver"
@@ -314,8 +294,6 @@ services:
       retries: 20
       start_period: 10s
     depends_on:
-      configserver:
-        condition: service_healthy
       eurekaserver:
         condition: service_healthy
     environment:
@@ -330,8 +308,6 @@ services:
     image: "giancharlock/dbmanager:s1"
     container_name: dbmanager-ms
     depends_on:
-      configserver:
-        condition: service_healthy
       eurekaserver:
         condition: service_healthy
     healthcheck:

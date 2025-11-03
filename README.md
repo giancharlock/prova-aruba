@@ -118,7 +118,7 @@ In folder docker-compose:
 docker compose up  postgres -d
 ### Creazione configuration server
 In folder docker-compose:
-docker compose up  configserver -d
+docker compose up  xxx -d
 ### Creazione eurekaserver
 In folder docker-compose:
 docker compose up  eurekaserver -d
@@ -136,9 +136,9 @@ mvn jib:build
 #### sevizi a supporto
 docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy --build -d --force-recreate
 #### microservizi
-docker compose up configserver eurekaserver dbmanager receiver sender gateway  --build -d --force-recreate
+docker compose up eurekaserver dbmanager receiver sender gatewayserver  --build -d --force-recreate
 
-docker compose down configserver eurekaserver dbmanager receiver sender gateway
+docker compose down eurekaserver dbmanager receiver sender gatewayserver
 
 ### Avvio mail server per test
 docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog

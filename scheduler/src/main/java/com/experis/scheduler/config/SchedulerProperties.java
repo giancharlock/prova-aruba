@@ -1,6 +1,8 @@
 package com.experis.scheduler.config;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -22,10 +24,12 @@ public class SchedulerProperties {
     @NotEmpty
     private String invoiceReportPath;
 
-    @NotEmpty
+    @Valid
+    @NotNull
     private DltJob dltJob;
 
-    @NotEmpty
+    @Valid
+    @NotNull
     private InvoiceReportJob invoiceReportJob;
 
     @Data
@@ -34,7 +38,7 @@ public class SchedulerProperties {
         private String cron;
         @NotEmpty
         private List<String> topics;
-        private Duration pollTimeout = Duration.ofSeconds(10);
+        private Duration pollTimeout = Duration.ofMinutes(1);
     }
 
     @Data

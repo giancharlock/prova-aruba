@@ -22,9 +22,8 @@
         <module>commons</module>
         <module>dbmanager</module>
         <module>receiver</module>
-        <!--module>sender</module>
-        <module>scheduler</module-->
-        <module>configserver</module>
+        <module>sender</module>
+        <module>scheduler</module>
         <module>eurekaserver</module>
         <module>gatewayserver</module>
     </modules>
