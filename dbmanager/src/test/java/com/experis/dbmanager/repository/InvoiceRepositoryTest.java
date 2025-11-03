@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
@@ -21,8 +22,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = { "spring.cloud.stream.enabled=false" })
+@Sql(statements = {
+    // Seed data required for this test class using H2-compatible syntax
+    "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('test_user_1', 'aruba_pwd_1', 'test1@aruba.it', 'ARUBA', CURRENT_DATE, 'system');"
+})
 @Import(AuditAwareImpl.class)
 class InvoiceRepositoryTest {
 

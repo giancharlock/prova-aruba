@@ -5,7 +5,6 @@ import com.experis.dbmanager.entity.Customer;
 import com.experis.dbmanager.enumerations.CustomerType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
@@ -18,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // Use the application's datasource (PostgreSQL)
 @TestPropertySource(properties = { "spring.cloud.stream.enabled=false" })
 @Sql(statements = {
-    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('sdi_user', 'sdi_password', 'sdi@governo.it', 'SDI', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;",
-    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('test_user_1', 'aruba_pwd_1', 'test1@aruba.it', 'ARUBA', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;",
-    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('test_user_2', 'aruba_pwd_2', 'test2@aruba.it', 'ARUBA', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;",
-    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('test_user_3', 'aruba_pwd_3', 'test3@aruba.it', 'ARUBA', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;"
+    // Use MERGE INTO for H2 compatibility (equivalent to INSERT ... ON CONFLICT ... DO NOTHING)
+    "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('sdi_user', 'sdi_password', 'sdi@governo.it', 'SDI', CURRENT_DATE, 'system');",
+    "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('test_user_1', 'aruba_pwd_1', 'test1@aruba.it', 'ARUBA', CURRENT_DATE, 'system');",
+    "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('test_user_2', 'aruba_pwd_2', 'test2@aruba.it', 'ARUBA', CURRENT_DATE, 'system');",
+    "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('test_user_3', 'aruba_pwd_3', 'test3@aruba.it', 'ARUBA', CURRENT_DATE, 'system');"
 })
 @Import(AuditAwareImpl.class)
 class CustomerRepositoryTest {

@@ -6,6 +6,17 @@ spring:
   config:
     import: "optional:configserver:http://localhost:8071/"
 
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://eurekaserver:8070/eureka/
+  instance:
+    hostname: eurekaserver
+  server:
+    enable-self-preservation: false # Good for development to see issues faster
+
 management:
   endpoints:
     web:

@@ -12,10 +12,25 @@ services:
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       # Listeners
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+  kafka-ui:
+    image: 'provectuslabs/kafka-ui:latest'
+    container_name: kafka-ui
+    ports:
+      - '9094:8080' # Porta per accedere alla UI dal tuo browser
+    depends_on:
+      - kafka
+    environment:
+      # Dice alla UI dove trovare il broker Kafka
+      KAFKA_CLUSTERS_0_NAME: 'Kafka Locale'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9092' # Nome del servizio Kafka
     extends:
       file: common-config.yml
       service: network-deploy-service
@@ -334,7 +349,7 @@ services:
       eurekaserver:
         condition: service_healthy
     healthcheck:
-      test: "curl --fail --silent localhost:9000/actuator/health/readiness | grep UP || exit 1"
+      test: "curl --fail --silent localhost:9020/actuator/health/readiness | grep UP || exit 1"
       interval: 20s
       timeout: 5s
       retries: 20
@@ -342,6 +357,7 @@ services:
     environment:
       SPRING_APPLICATION_NAME: "dbmanager"
       OTEL_SERVICE_NAME: "dbmanager"
+      SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: "kafka:9092"
     extends:
       file: common-config.yml
       service: microservice-eureka-config
@@ -349,11 +365,19 @@ services:
   sender:
     image: "giancharlock/sender:s1"
     container_name: sender-ms
+    healthcheck:
+      test: "curl --fail --silent localhost:9010/actuator/health/readiness | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
     environment:
+      SPRING_APPLICATION_NAME: "sender"
+      OTEL_SERVICE_NAME: "sender"
       SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: "kafka:9092"
     extends:
       file: common-config.yml
-      service: network-deploy-service
+      service: microservice-eureka-config
 
   gatewayserver:
     image: "giancharlock/gatewayserver:s1"

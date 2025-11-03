@@ -51,7 +51,7 @@ public class ReceiverServiceImpl implements IReceiverService {
         asyncResponseCache.put(cacheKey, future);
 
         try {
-            boolean sent = streamBridge.sender("publishSdiNotification-out-0", notification);
+            boolean sent = streamBridge.send("publishSdiNotification-out-0", notification);
             if (!sent) {
                 log.error("Errore nell'invio Kafka della notifica SdI per {}", cacheKey);
                 future.complete(createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED));
@@ -77,7 +77,7 @@ public class ReceiverServiceImpl implements IReceiverService {
         asyncResponseCache.put(cacheKey, future);
 
         try {
-            boolean sent = streamBridge.sender(topic, invoice);
+            boolean sent = streamBridge.send(topic, invoice);
             if (!sent) {
                 log.error("Errore nell'invio Kafka della fattura {}", cacheKey);
                 future.complete(createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED));
@@ -119,7 +119,7 @@ public class ReceiverServiceImpl implements IReceiverService {
                     future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
                 } catch (Exception e) {
                     log.error("Errore durante l'esecuzione della callback per {} a {}: {}", cacheKey, savedInvoice.getCallback(), e.getMessage());
-                    streamBridge.sender("business-dlt-out-0", savedInvoice);
+                    streamBridge.send("business-dlt-out-0", savedInvoice);
                     future.complete(createErrorResponse("Errore Callback", HttpStatus.SERVICE_UNAVAILABLE));
                 }
             } else {

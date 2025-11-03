@@ -18,6 +18,12 @@ spring:
       ddl-auto: create-drop
     show-sql: true
 
+  # --- Kafka Configuration for Tests ---
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   # --- Spring Cloud Stream Configuration for Tests ---
   cloud:
     config:
@@ -36,7 +42,7 @@ spring:
           destination: OUTGOING_INVOICE
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers: ${spring.kafka.bootstrap-servers} # Use the same broker as KafkaTemplate
 
 # --- Eureka Configuration for Tests ---
 eureka:

@@ -137,3 +137,6 @@ http://localhost:8025/ per visualizzare le spedizioni effettuate
 
 ### Accesso alla documentazione swagger
 http://localhost:9020/swagger-ui/ o più in generale http://localhost:XXXX/swagger-ui/
+
+### Kafka-ui
+http://localhost:9094/

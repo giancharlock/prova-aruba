@@ -161,7 +161,7 @@ class ReceiverIntegrationTest {
             assertThat(receivedInvoice.getInvoiceStatus()).isEqualTo(InvoiceStatus.INTERNAL_INVOICE_NEW);
 
             receivedInvoice.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
-            kafkaProducer.sender(new ProducerRecord<>(TOPIC_SAVED_INVOICE, receivedInvoice));
+            kafkaProducer.send(new ProducerRecord<>(TOPIC_SAVED_INVOICE, receivedInvoice));
             kafkaProducer.flush();
 
             mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isOk());
@@ -190,7 +190,7 @@ class ReceiverIntegrationTest {
             assertThat(receivedInvoice.getInvoiceStatus()).isEqualTo(InvoiceStatus.EXTERNAL_INVOICE);
 
             receivedInvoice.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
-            kafkaProducer.sender(new ProducerRecord<>(TOPIC_SAVED_INVOICE, receivedInvoice));
+            kafkaProducer.send(new ProducerRecord<>(TOPIC_SAVED_INVOICE, receivedInvoice));
             kafkaProducer.flush();
 
             mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isOk());
@@ -216,7 +216,7 @@ class ReceiverIntegrationTest {
             assertThat(receivedNotification).isNotNull();
 
             InvoiceDto savedInvoiceResponse = new InvoiceDto(notification.getInvoiceNumber(), notification.getStatus(), null, null, null, null, null, new CustomerDto(notification.getCustomerId(), null, null, null, null, null, null, null, null), null);
-            kafkaProducer.sender(new ProducerRecord<>(TOPIC_SAVED_INVOICE, savedInvoiceResponse));
+            kafkaProducer.send(new ProducerRecord<>(TOPIC_SAVED_INVOICE, savedInvoiceResponse));
             kafkaProducer.flush();
 
             mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isOk());
@@ -243,7 +243,7 @@ class ReceiverIntegrationTest {
             assertThat(receivedOnIncoming).isNotNull();
 
             receivedOnIncoming.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
-            kafkaProducer.sender(new ProducerRecord<>(TOPIC_SAVED_INVOICE, receivedOnIncoming));
+            kafkaProducer.send(new ProducerRecord<>(TOPIC_SAVED_INVOICE, receivedOnIncoming));
             kafkaProducer.flush();
 
             mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isServiceUnavailable());

@@ -39,12 +39,14 @@ spring:
   cloud:
     stream:
       function:
-        definition: consumeIncomingInvoice;consumeSdiNotification
+        definition: consumeIncomingInvoice;consumeSdiNotification;consumeSentInvoice
       bindings:
         consumeIncomingInvoice-in-0:
           destination: INCOMING_INVOICE
         consumeSdiNotification-in-0:
           destination: DSI_NOTIFICATION
+        consumeSentInvoice-in-0:
+          destination: SENT_INVOICE
         publishSavedInvoice-out-0:
           destination: SAVED_INCOMING_INVOICE
         publishOutgoingInvoice-out-0:
@@ -63,12 +65,26 @@ spring:
               dlqName: incoming-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
+              # Disable type headers for broader compatibility with producers
+              use-native-decoding: true
+              header-mode: none
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
           consumeSdiNotification-in-0:
             consumer:
               enableDlq: true
               dlqName: sdi-notification.DLT
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              # Disable type headers for broader compatibility with producers
+              use-native-decoding: true
+              header-mode: none
+              back-off-max-interval: 10000
+              back-off-multiplier: 2.0
+          consumeSentInvoice-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: sent-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
               back-off-max-interval: 10000

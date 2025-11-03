@@ -51,7 +51,7 @@ public class TimeoutService {
 
             // Invia ESPLICITAMENTE la fattura a un topic DLT dedicato
             // Usiamo un topic DLT specifico per i timeout di business
-            streamBridge.sender("business-dlt-out-0", invoice);
+            streamBridge.send("business-dlt-out-0", invoice);
             log.info("Invoice {} sent to business DLT.", invoice.getInvoiceNumber());
         }
     }
