@@ -17,7 +17,7 @@ public class ResponseDto {
     private String statusCode;
 
     @Schema(
-            description = "Status message in the response"
+            description = "Status sender in the response"
     )
     private String statusMsg;
     

@@ -1,6 +1,14 @@
 server:
   port: 8080
+
+app:
+  callback:
+    timeout-ms: 30000 # Timeout per la produzione
+
 spring:
+  threads:
+    virtual:
+      enabled: true
   application:
     name: "receiver"
   profiles:
@@ -13,21 +21,21 @@ spring:
         enabled: true
     stream:
       function:
-        definition: publishInvoiceToBeValidated;consumeValidInvoice;consumeInvalidInvoice
+        definition: consumeSavedInvoice
       bindings:
-        # Publisher
-        publishInvoiceToBeValidated-out-0:
+        publishInvoice-out-0:
           destination: INCOMING_INVOICE
-        # Consumers
-        consumeValidInvoice-in-0:
-          destination: INVOICE_VALID
+        publishSdiNotification-out-0:
+          destination: DSI_NOTIFICATION
+        consumeSavedInvoice-in-0:
+          destination: SAVED_INCOMING_INVOICE
           group: ${spring.application.name}
-        consumeInvalidInvoice-in-0:
-          destination: INVOICE_INVALID
-          group: ${spring.application.name}
+        business-dlt-out-0:
+          destination: business.DLT
       kafka:
         binder:
           brokers: kafka:9092
+
 management:
   endpoints:
     web:
@@ -50,7 +58,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-
 
 eureka:
   instance:

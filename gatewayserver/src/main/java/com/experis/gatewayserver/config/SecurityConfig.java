@@ -23,7 +23,7 @@ public class SecurityConfig {
         serverHttpSecurity.authorizeExchange(exchanges -> exchanges.pathMatchers(HttpMethod.GET).permitAll()
                 .pathMatchers("/experis/receiver/**").hasRole("RECEIVER")
                 .pathMatchers("/experis/dbmanager/**").hasRole("DBMANAGER")
-                .pathMatchers("/experis/send/**").hasRole("SEND"))
+                .pathMatchers("/experis/sender/**").hasRole("SENDER"))
                 .oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec
                         .jwt(jwtSpec -> jwtSpec.jwtAuthenticationConverter(grantedAuthoritiesExtractor())));
         serverHttpSecurity.csrf(csrfSpec -> csrfSpec.disable());

@@ -2,7 +2,7 @@ build:
   version: "1.0"
 
 receiver:
-  message: "Welcome to InvoiceApp DbManager Microservice DEV"
+  sender: "Welcome to InvoiceApp DbManager Microservice DEV"
   contactDetails:
     name: "Giancarlo Cadei - Developer"
     email: "giancarlo.cadei@it.experis.com"

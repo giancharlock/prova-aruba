@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  # --- Disable Cloud features for tests ---
+  cloud:
+    config:
+      enabled: false
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+  # --- Mail Server Configuration for Tests ---
+  mail:
+    host: localhost
+    port: 1025
+
+# --- Eureka Configuration for Tests ---
+eureka:
+  client:
+    enabled: false

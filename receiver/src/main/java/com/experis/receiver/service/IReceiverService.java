@@ -1,30 +1,41 @@
 package com.experis.receiver.service;
 
-import com.experis.receiver.dto.InvoiceDto;
-import com.experis.receiver.dto.ResponseDto;
+import com.experis.dbmanager.dto.InvoiceDto;
+import com.experis.dbmanager.dto.ResponseDto;
+import com.experis.dbmanager.dto.SdiNotificationDto;
+import org.springframework.http.ResponseEntity;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface IReceiverService {
 
     /**
+     * Gestisce la ricezione di una fattura interna.
+     * La imposta come INTERNAL_INVOICE_NEW e la invia a Kafka.
+     * Restituisce una risposta immediata (202 Accepted) e gestisce la callback asincrona.
      *
      * @param invoice - InvoiceDto Object
-     * @return result of operation
+     * @return un CompletableFuture che si risolverà con la risposta finale.
      */
-    ResponseDto saveInternalInvoice(InvoiceDto invoice);
+    CompletableFuture<ResponseEntity<ResponseDto>> saveInternalInvoice(InvoiceDto invoice);
 
     /**
+     * Gestisce la ricezione di una fattura esterna.
+     * La imposta come EXTERNAL_INVOICE e la invia a Kafka.
+     * Restituisce una risposta immediata (202 Accepted) e gestisce la callback asincrona.
      *
      * @param invoice - InvoiceDto Object
-     * @return result of operation
+     * @return un CompletableFuture che si risolverà con la risposta finale.
      */
-    ResponseDto saveExternalInvoice(InvoiceDto invoice);
+    CompletableFuture<ResponseEntity<ResponseDto>> saveExternalInvoice(InvoiceDto invoice);
 
     /**
+     * Riceve una notifica da SdI (tramite endpoint HTTP).
+     * La inoltra al topic Kafka DSI_NOTIFICATION.
      *
-     * @param mobileNumber - Input Mobile Number
-     * @return boolean indicating if the delete of Receiver details is successful or not
+     * @param notification - SdiNotificationDto Object
+     * @return un CompletableFuture che si risolverà con la risposta finale.
      */
-    ResponseDto deleteReceiver(String mobileNumber);
-
+    CompletableFuture<ResponseEntity<ResponseDto>> handleSdiNotification(SdiNotificationDto notification);
 
 }

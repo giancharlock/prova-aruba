@@ -25,7 +25,7 @@ public class ErrorResponseDto {
     private HttpStatus errorCode;
 
     @Schema(
-            description = "Error message representing the error happened"
+            description = "Error sender representing the error happened"
     )
     private  String errorMessage;
 

@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class DbManagerAlreadyExistsException extends RuntimeException {
 
-    public DbManagerAlreadyExistsException(String message){
-        super(message);
+    public DbManagerAlreadyExistsException(String sender){
+        super(sender);
     }
 
 }

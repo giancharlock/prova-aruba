@@ -85,10 +85,11 @@ Il DbManager riceve su INCOMING_INVOICE e su DSI_NOTIFICATION:
     Il thread ha un timeout per mandare in DLT la notifica ricevuta se non riesce a comunicare con qualche sistema esterno
 
 
-## SEND SERVER
+## SENDER SERVER
 Legge da kafka OUTGOING_INVOICE per mandare a SdI e scrive su SENT_INVOICE il risultato della spedizione.
 Se dopo un certo numero di tentativi non riesce a comunicare ad altri sistemi il risultato della propria operazione,
 il dato va nella DLT per gestione successiva.
+Supponiamo che l'invio a SdI sia via email, server e porta configurabili
 
 # SCHEDULER SERVER
 Ha un job per la lettura delle DLT ed eventuale notifica dell'esistenza di problemi
@@ -129,6 +130,10 @@ mvn jib:build
 
 ### In dev dentro ide
 docker compose up kafka postgres gateway backend grafana tempo prometheus minio alloy --build -d --force-recreate
+
+### Avvio mail server per test
+docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
+http://localhost:8025/ per visualizzare le spedizioni effettuate
 
 ### Accesso alla documentazione swagger
 http://localhost:9020/swagger-ui/ o più in generale http://localhost:XXXX/swagger-ui/

@@ -37,17 +37,17 @@ public class KafkaConsumerService {
                 invoiceDto.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
                 savedInvoice = dbManagerService.createInvoice(invoiceDto.getCustomer().getCustomerId(), invoiceDto);
 
-                // Send to SAVED_INCOMING_INVOICE and OUTGOING_INVOICE
-                streamBridge.send("publishSavedInvoice-out-0", savedInvoice);
-                streamBridge.send("publishOutgoingInvoice-out-0", savedInvoice);
+                // Sender to SAVED_INCOMING_INVOICE and OUTGOING_INVOICE
+                streamBridge.sender("publishSavedInvoice-out-0", savedInvoice);
+                streamBridge.sender("publishOutgoingInvoice-out-0", savedInvoice);
                 log.info("Invoice {} sent to SAVED and OUTGOING topics.", savedInvoice.getInvoiceNumber());
             } else {
                 log.warn("Customer {} does not exist. Marking invoice as invalid.", invoiceDto.getCustomer().getCustomerId());
                 invoiceDto.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_INVALID);
                 savedInvoice = dbManagerService.createInvoice(invoiceDto.getCustomer().getCustomerId(), invoiceDto);
 
-                // Send only to SAVED_INCOMING_INVOICE
-                streamBridge.send("publishSavedInvoice-out-0", savedInvoice);
+                // Sender only to SAVED_INCOMING_INVOICE
+                streamBridge.sender("publishSavedInvoice-out-0", savedInvoice);
                 log.info("Invoice {} sent to SAVED topic as invalid.", savedInvoice.getInvoiceNumber());
             }
         };
@@ -67,8 +67,8 @@ public class KafkaConsumerService {
                 invoice.setInvoiceStatus(notification.getStatus());
                 InvoiceDto updatedInvoice = dbManagerService.updateInvoice(invoice.getInvoiceNumber(), invoice);
 
-                // Send the updated invoice to SAVED_INCOMING_INVOICE
-                streamBridge.send("publishSavedInvoice-out-0", updatedInvoice);
+                // Sender the updated invoice to SAVED_INCOMING_INVOICE
+                streamBridge.sender("publishSavedInvoice-out-0", updatedInvoice);
                 log.info("Updated invoice {} sent to SAVED topic.", updatedInvoice.getInvoiceNumber());
             }, () -> {
                 log.error("Invoice {} not found for SDI notification. Marking as invalid.", notification.getInvoiceNumber());
@@ -77,7 +77,7 @@ public class KafkaConsumerService {
                 invalidInvoice.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_INVALID);
                 // We don't have full customer data here, but we can create a placeholder
                 // Or handle it as a specific event for invalid notifications
-                streamBridge.send("publishSavedInvoice-out-0", invalidInvoice);
+                streamBridge.sender("publishSavedInvoice-out-0", invalidInvoice);
             });
         };
     }

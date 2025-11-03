@@ -347,9 +347,9 @@ services:
       file: common-config.yml
       service: microservice-eureka-config
 
-  message:
-    image: "giancharlock/message:s1"
-    container_name: message-ms
+  sender:
+    image: "giancharlock/sender:s1"
+    container_name: sender-ms
     environment:
       SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: "kafka:9092"
     extends:

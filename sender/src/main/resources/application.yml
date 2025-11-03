@@ -1,0 +1,65 @@
+server:
+  port: 9010
+
+spring:
+  application:
+    name: "sender"
+  profiles:
+    active: "prod"
+
+  # --- Configurazione per Config Server ed Eureka ---
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+
+  # --- Configurazione Mail Server Locale (per simulare invio SdI) ---
+  mail:
+    host: localhost
+    port: 1025 # Porta standard per mail server locali come MailHog o GreenMail
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+      mail.debug: true # Utile per il debug
+
+  # --- Configurazione Spring Cloud Stream ---
+  cloud:
+    function:
+      definition: consumeOutgoingInvoice
+    stream:
+      bindings:
+        # Consumer: Legge le fatture da inviare
+        consumeOutgoingInvoice-in-0:
+          destination: OUTGOING_INVOICE
+          group: ${spring.application.name}
+          consumer:
+            max-attempts: 3 # Ritenta 3 volte in caso di errore
+            back-off-initial-interval: 1000
+            back-off-max-interval: 5000
+            back-off-multiplier: 2.0
+            enableDlq: true
+            dlqName: sender-outgoing.DLT
+
+        # Producer: Scrive l'esito dell'invio
+        publishSentInvoice-out-0:
+          destination: SENT_INVOICE
+
+      kafka:
+        binder:
+          brokers: localhost:9092 # Assicurati che sia l'indirizzo corretto
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+logging:
+  level:
+    com:
+      experis:
+        sender: DEBUG
+    org.springframework.mail: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

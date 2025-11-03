@@ -15,7 +15,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop # Automatically create and drop the schema for tests
+      ddl-auto: create-drop
     show-sql: true
 
   # --- Spring Cloud Stream Configuration for Tests ---

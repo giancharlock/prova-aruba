@@ -1,174 +1,181 @@
 package com.experis.dbmanager.service.consumer;
 
+import com.experis.dbmanager.entity.Customer;
 import com.experis.dbmanager.dto.CustomerDto;
 import com.experis.dbmanager.dto.InvoiceDto;
 import com.experis.dbmanager.dto.SdiNotificationDto;
 import com.experis.dbmanager.enumerations.InvoiceStatus;
-import com.experis.dbmanager.service.IDbManagerService;
+import com.experis.dbmanager.repository.CustomerRepository;
+import com.experis.dbmanager.repository.InvoiceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.stream.binder.test.InputDestination;
-import org.springframework.cloud.stream.binder.test.OutputDestination;
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
-import org.springframework.context.annotation.Import;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.io.IOException;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(properties = "eureka.client.enabled=false")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles("test")
-@Import(TestChannelBinderConfiguration.class)
+@EmbeddedKafka(partitions = 1,
+        topics = {
+                KafkaConsumerServiceIntegrationTest.INCOMING_INVOICE_INPUT,
+                KafkaConsumerServiceIntegrationTest.SDI_NOTIFICATION_INPUT,
+                KafkaConsumerServiceIntegrationTest.SAVED_INVOICE_OUTPUT,
+                KafkaConsumerServiceIntegrationTest.OUTGOING_INVOICE_OUTPUT
+        })
 class KafkaConsumerServiceIntegrationTest {
 
     @Autowired
-    private InputDestination input;
+    private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Autowired
-    private OutputDestination output;
-
-    @MockBean
-    private IDbManagerService dbManagerService;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String INCOMING_INVOICE_INPUT = "consumeIncomingInvoice-in-0";
-    private static final String SDI_NOTIFICATION_INPUT = "consumeSdiNotification-in-0";
-    private static final String SAVED_INVOICE_OUTPUT = "publishSavedInvoice-out-0";
-    private static final String OUTGOING_INVOICE_OUTPUT = "publishOutgoingInvoice-out-0";
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+
+    public static final String INCOMING_INVOICE_INPUT = "INCOMING_INVOICE";
+    public static final String SDI_NOTIFICATION_INPUT = "DSI_NOTIFICATION";
+    public static final String SAVED_INVOICE_OUTPUT = "SAVED_INCOMING_INVOICE";
+    public static final String OUTGOING_INVOICE_OUTPUT = "OUTGOING_INVOICE";
+
+    private Consumer<String, String> consumer;
+
+    @BeforeEach
+    void setUp() {
+        Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("test-group", "true", embeddedKafkaBroker);
+        consumer = new DefaultKafkaConsumerFactory<String, String>(consumerProps).createConsumer();
+        embeddedKafkaBroker.consumeFromAllEmbeddedTopics(consumer);
+
+        // Clean up database before each test
+        invoiceRepository.deleteAll();
+        customerRepository.deleteAll();
+    }
+
+    @AfterEach
+    void tearDown() {
+        consumer.close();
+    }
 
     @Test
-    void testConsumeIncomingInvoice_whenCustomerExists() throws IOException {
+    void testConsumeIncomingInvoice_whenCustomerExists() throws Exception {
         // Arrange
+        Customer customer = new Customer();
+        customer.setUsername("test-user");
+        customer.setEmail("test@test.com");
+        customer.setPassword("pwd");
+        Customer savedCustomer = customerRepository.save(customer);
+
         CustomerDto customerDto = new CustomerDto();
-        customerDto.setCustomerId(1);
+        customerDto.setCustomerId(savedCustomer.getCustomerId());
+
         InvoiceDto incomingInvoice = new InvoiceDto();
         incomingInvoice.setCustomer(customerDto);
         incomingInvoice.setInvoice("<xml>test</xml>");
 
-        // Simulate the service generating an ID for the new invoice
-        InvoiceDto savedInvoiceWithGeneratedId = new InvoiceDto();
-        savedInvoiceWithGeneratedId.setInvoiceNumber(999); // A generated ID
-        savedInvoiceWithGeneratedId.setCustomer(customerDto);
-        savedInvoiceWithGeneratedId.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
-
-        when(dbManagerService.findCustomerById(1)).thenReturn(Optional.of(customerDto));
-        when(dbManagerService.createInvoice(anyInt(), any(InvoiceDto.class))).thenReturn(savedInvoiceWithGeneratedId);
-
-        Message<InvoiceDto> message = MessageBuilder.withPayload(incomingInvoice).build();
-
         // Act
-        input.send(message, INCOMING_INVOICE_INPUT);
+        kafkaTemplate.send(INCOMING_INVOICE_INPUT, incomingInvoice);
 
         // Assert
-        Message<byte[]> savedOutput = output.receive(100, SAVED_INVOICE_OUTPUT);
-        Message<byte[]> outgoingOutput = output.receive(100, OUTGOING_INVOICE_OUTPUT);
-
-        assertThat(savedOutput).isNotNull();
-        assertThat(outgoingOutput).isNotNull();
-
-        InvoiceDto savedResult = objectMapper.readValue(savedOutput.getPayload(), InvoiceDto.class);
-        InvoiceDto outgoingResult = objectMapper.readValue(outgoingOutput.getPayload(), InvoiceDto.class);
-
-        // Verify the invoice has the generated ID and correct status
-        assertThat(savedResult.getInvoiceNumber()).isEqualTo(999);
+        // Check SAVED_INVOICE_OUTPUT
+        ConsumerRecord<String, String> savedRecord = KafkaTestUtils.getSingleRecord(consumer, SAVED_INVOICE_OUTPUT, Duration.ofMillis(5000L));
+        assertNotNull(savedRecord);
+        InvoiceDto savedResult = objectMapper.readValue(savedRecord.value(), InvoiceDto.class);
         assertThat(savedResult.getInvoiceStatus()).isEqualTo(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
-        assertThat(outgoingResult.getInvoiceNumber()).isEqualTo(999);
+        assertThat(savedResult.getCustomer().getCustomerId()).isEqualTo(savedCustomer.getCustomerId());
+
+        // Check OUTGOING_INVOICE_OUTPUT
+        ConsumerRecord<String, String> outgoingRecord = KafkaTestUtils.getSingleRecord(consumer, OUTGOING_INVOICE_OUTPUT,  Duration.ofMillis(5000L));
+        assertNotNull(outgoingRecord);
+        InvoiceDto outgoingResult = objectMapper.readValue(outgoingRecord.value(), InvoiceDto.class);
         assertThat(outgoingResult.getInvoiceStatus()).isEqualTo(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
+        assertThat(outgoingResult.getInvoiceNumber()).isEqualTo(savedResult.getInvoiceNumber());
     }
 
     @Test
-    void testConsumeIncomingInvoice_whenCustomerNotExists() throws IOException {
+    void testConsumeIncomingInvoice_whenCustomerNotExists() throws Exception {
         // Arrange
         CustomerDto customerDto = new CustomerDto();
-        customerDto.setCustomerId(2);
+        customerDto.setCustomerId(999); // Non-existent customer
         InvoiceDto incomingInvoice = new InvoiceDto();
         incomingInvoice.setCustomer(customerDto);
 
-        InvoiceDto savedInvalidInvoice = new InvoiceDto();
-        savedInvalidInvoice.setInvoiceNumber(888); // A generated ID
-        savedInvalidInvoice.setCustomer(customerDto);
-        savedInvalidInvoice.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_INVALID);
-
-        when(dbManagerService.findCustomerById(2)).thenReturn(Optional.empty());
-        when(dbManagerService.createInvoice(anyInt(), any(InvoiceDto.class))).thenReturn(savedInvalidInvoice);
-
-        Message<InvoiceDto> message = MessageBuilder.withPayload(incomingInvoice).build();
-
         // Act
-        input.send(message, INCOMING_INVOICE_INPUT);
+        kafkaTemplate.send(INCOMING_INVOICE_INPUT, incomingInvoice);
 
         // Assert
-        Message<byte[]> savedOutput = output.receive(100, SAVED_INVOICE_OUTPUT);
-        Message<byte[]> outgoingOutput = output.receive(100, OUTGOING_INVOICE_OUTPUT); // Should be null
-
-        assertThat(savedOutput).isNotNull();
-        assertThat(outgoingOutput).isNull();
-
-        InvoiceDto savedResult = objectMapper.readValue(savedOutput.getPayload(), InvoiceDto.class);
-        assertThat(savedResult.getInvoiceNumber()).isEqualTo(888);
+        // Check SAVED_INVOICE_OUTPUT
+        ConsumerRecord<String, String> savedRecord = KafkaTestUtils.getSingleRecord(consumer, SAVED_INVOICE_OUTPUT,  Duration.ofMillis(5000L));
+        assertNotNull(savedRecord);
+        InvoiceDto savedResult = objectMapper.readValue(savedRecord.value(), InvoiceDto.class);
         assertThat(savedResult.getInvoiceStatus()).isEqualTo(InvoiceStatus.INTERNAL_INVOICE_INVALID);
+
+        // Check that nothing is sent to OUTGOING_INVOICE_OUTPUT
+        Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("temp-group", "true", embeddedKafkaBroker);
+        try (Consumer<String, String> tempConsumer = new DefaultKafkaConsumerFactory<String, String>(consumerProps).createConsumer()) {
+            tempConsumer.subscribe(Arrays.asList(OUTGOING_INVOICE_OUTPUT));
+            assertThat(KafkaTestUtils.getRecords(tempConsumer,  Duration.ofMillis(1000L)).count()).isZero();
+        }
     }
 
     @Test
-    void testConsumeSdiNotification_whenInvoiceExists() throws IOException {
+    void testConsumeSdiNotification_whenInvoiceExists() throws Exception {
         // Arrange
-        int existingInvoiceNumber = 123;
+        // Create an existing invoice in DB
+        com.experis.dbmanager.entity.Invoice existingInvoiceEntity = new com.experis.dbmanager.entity.Invoice();
+        existingInvoiceEntity.setCustomerId(1);
+        existingInvoiceEntity.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
+        existingInvoiceEntity.setInvoice("<xml></xml>");
+        com.experis.dbmanager.entity.Invoice savedInvoice = invoiceRepository.save(existingInvoiceEntity);
+        int existingInvoiceNumber = savedInvoice.getInvoiceNumber();
+
         SdiNotificationDto notification = new SdiNotificationDto(1, existingInvoiceNumber, InvoiceStatus.INTERNAL_INVOICE_DELIVERED);
-        
-        InvoiceDto existingInvoice = new InvoiceDto();
-        existingInvoice.setInvoiceNumber(existingInvoiceNumber);
-
-        InvoiceDto updatedInvoice = new InvoiceDto();
-        updatedInvoice.setInvoiceNumber(existingInvoiceNumber);
-        updatedInvoice.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_DELIVERED);
-
-        when(dbManagerService.findInvoiceByNumber(existingInvoiceNumber)).thenReturn(Optional.of(existingInvoice));
-        when(dbManagerService.updateInvoice(anyInt(), any(InvoiceDto.class))).thenReturn(updatedInvoice);
-
-        Message<SdiNotificationDto> message = MessageBuilder.withPayload(notification).build();
 
         // Act
-        input.send(message, SDI_NOTIFICATION_INPUT);
+        kafkaTemplate.send(SDI_NOTIFICATION_INPUT, notification);
 
         // Assert
-        Message<byte[]> savedOutput = output.receive(100, SAVED_INVOICE_OUTPUT);
-        assertThat(savedOutput).isNotNull();
-
-        InvoiceDto savedResult = objectMapper.readValue(savedOutput.getPayload(), InvoiceDto.class);
+        ConsumerRecord<String, String> savedRecord = KafkaTestUtils.getSingleRecord(consumer, SAVED_INVOICE_OUTPUT,  Duration.ofMillis(5000L));
+        assertNotNull(savedRecord);
+        InvoiceDto savedResult = objectMapper.readValue(savedRecord.value(), InvoiceDto.class);
         assertThat(savedResult.getInvoiceNumber()).isEqualTo(existingInvoiceNumber);
         assertThat(savedResult.getInvoiceStatus()).isEqualTo(InvoiceStatus.INTERNAL_INVOICE_DELIVERED);
     }
 
     @Test
-    void testConsumeSdiNotification_whenInvoiceNotExists() throws IOException {
+    void testConsumeSdiNotification_whenInvoiceNotExists() throws Exception {
         // Arrange
         int nonExistentInvoiceNumber = 404;
         SdiNotificationDto notification = new SdiNotificationDto(1, nonExistentInvoiceNumber, InvoiceStatus.INTERNAL_INVOICE_DELIVERED);
 
-        when(dbManagerService.findInvoiceByNumber(nonExistentInvoiceNumber)).thenReturn(Optional.empty());
-
-        Message<SdiNotificationDto> message = MessageBuilder.withPayload(notification).build();
-
         // Act
-        input.send(message, SDI_NOTIFICATION_INPUT);
+        kafkaTemplate.send(SDI_NOTIFICATION_INPUT, notification);
 
         // Assert
-        Message<byte[]> savedOutput = output.receive(100, SAVED_INVOICE_OUTPUT);
-        assertThat(savedOutput).isNotNull();
-
-        InvoiceDto savedResult = objectMapper.readValue(savedOutput.getPayload(), InvoiceDto.class);
+        ConsumerRecord<String, String> savedRecord = KafkaTestUtils.getSingleRecord(consumer, SAVED_INVOICE_OUTPUT,  Duration.ofMillis(5000L));
+        assertNotNull(savedRecord);
+        InvoiceDto savedResult = objectMapper.readValue(savedRecord.value(), InvoiceDto.class);
         assertThat(savedResult.getInvoiceStatus()).isEqualTo(InvoiceStatus.INTERNAL_INVOICE_INVALID);
         assertThat(savedResult.getInvoiceNumber()).isEqualTo(nonExistentInvoiceNumber);
     }

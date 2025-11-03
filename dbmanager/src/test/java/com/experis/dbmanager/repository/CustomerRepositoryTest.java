@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Optional;
 
@@ -19,6 +20,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // Use the application's datasource (PostgreSQL)
 @TestPropertySource(properties = { "spring.cloud.stream.enabled=false" })
+@Sql(statements = {
+    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('sdi_user', 'sdi_password', 'sdi@governo.it', 'SDI', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;",
+    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('test_user_1', 'aruba_pwd_1', 'test1@aruba.it', 'ARUBA', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;",
+    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('test_user_2', 'aruba_pwd_2', 'test2@aruba.it', 'ARUBA', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;",
+    "INSERT INTO customer (username, password, email, customer_type, created_at, created_by) VALUES ('test_user_3', 'aruba_pwd_3', 'test3@aruba.it', 'ARUBA', CURRENT_DATE, 'system') ON CONFLICT (username) DO NOTHING;"
+})
 @Import(AuditAwareImpl.class)
 class CustomerRepositoryTest {
 

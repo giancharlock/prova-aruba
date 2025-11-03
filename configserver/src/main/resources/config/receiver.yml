@@ -2,7 +2,7 @@ build:
   version: "0.0.1"
 
 receiver:
-  message: "Welcome to InvoiceApp Receiver Microservice DEV"
+  sender: "Welcome to InvoiceApp Receiver Microservice DEV"
   contactDetails:
     name: "Giancarlo Cadei - Developer"
     email: "giancarlo.cadei@it.experis.com"

@@ -41,11 +41,11 @@ public class GatewayserverApplication {
 											.setKeyResolver(userKeyResolver())))
 							.uri("lb://DBMANAGER"))
                 .route(p -> p
-                        .path("/experis/send/**")
-                        .filters( f -> f.rewritePath("/experis/send/(?<segment>.*)","/${segment}")
+                        .path("/experis/sender/**")
+                        .filters( f -> f.rewritePath("/experis/sender/(?<segment>.*)","/${segment}")
                                 .circuitBreaker(config -> config.setName("sendCircuitBreaker")
                                         .setFallbackUri("forward:/contactSupport")))
-                        .uri("lb://SEND"))
+                        .uri("lb://SENDER"))
                 .build();
 	}
 

@@ -2,7 +2,7 @@ build:
   version: "1.0"
 
 receiver:
-  message: "Welcome to InvoiceApp Scheduler Microservice PROD"
+  sender: "Welcome to InvoiceApp Scheduler Microservice PROD"
   contactDetails:
     name: "Giancarlo Cadei - Developer"
     email: "giancarlo.cadei@it.experis.com"
