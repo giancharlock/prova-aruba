@@ -1,6 +1,6 @@
-package com.experis.sender.exception;
+package com.experis.scheduler.exception;
 
-import com.experis.sender.dto.ErrorResponseDto;
+import com.experis.scheduler.dto.ErrorResponseDto;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

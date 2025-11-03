@@ -41,10 +41,9 @@ spring:
         # Producer: Scrive l'esito dell'invio
         publishSentInvoice-out-0:
           destination: SENT_INVOICE
-
       kafka:
         binder:
-          brokers: localhost:9092 # Assicurati che sia l'indirizzo corretto
+          brokers: kafka:9092 # Assicurati che sia l'indirizzo corretto
 
 eureka:
   instance:
@@ -53,7 +52,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8070/eureka/
+      defaultZone: http://eurekaserver:8761/eureka/
 
 logging:
   level:

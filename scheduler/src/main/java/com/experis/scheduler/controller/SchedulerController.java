@@ -1,11 +1,11 @@
-package com.experis.sender.controller;
+package com.experis.scheduler.controller;
 
-import com.experis.sender.constants.SchedulerConstants;
-import com.experis.sender.dto.SchedulerContactInfoDto;
-import com.experis.sender.dto.SchedulerDto;
-import com.experis.sender.dto.ErrorResponseDto;
-import com.experis.sender.dto.ResponseDto;
-import com.experis.sender.service.ISchedulerService;
+import com.experis.scheduler.constants.SchedulerConstants;
+import com.experis.scheduler.dto.SchedulerContactInfoDto;
+import com.experis.scheduler.dto.SchedulerDto;
+import com.experis.scheduler.dto.ErrorResponseDto;
+import com.experis.scheduler.dto.ResponseDto;
+import com.experis.scheduler.service.ISchedulerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

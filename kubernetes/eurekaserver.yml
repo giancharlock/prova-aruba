@@ -18,7 +18,7 @@ spec:
       - name: eurekaserver
         image: experis/eurekaserver:s1
         ports:
-        - containerPort: 8070
+        - containerPort: 8761
         env:
         - name: SPRING_APPLICATION_NAME
           valueFrom:
@@ -41,5 +41,5 @@ spec:
   type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 8070
-      targetPort: 8070
+      port: 8761
+      targetPort: 8761

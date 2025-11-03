@@ -1,4 +1,4 @@
-package com.experis.sender.constants;
+package com.experis.scheduler.constants;
 
 public final class SchedulerConstants {
 

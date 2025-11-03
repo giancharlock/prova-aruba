@@ -8,14 +8,7 @@ spring:
     config:
       enabled: false
     stream:
-      kafka:
-        binder:
-          brokers: localhost:9092
-
-  # --- Mail Server Configuration for Tests ---
-  mail:
-    host: localhost
-    port: 1025
+      enabled: false
 
 # --- Eureka Configuration for Tests ---
 eureka:

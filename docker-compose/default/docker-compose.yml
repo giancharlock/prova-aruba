@@ -301,12 +301,9 @@ services:
     image: "giancharlock/eurekaserver:s1"
     container_name: eurekaserver-ms
     ports:
-      - "8070:8070"
-    depends_on:
-      configserver:
-        condition: service_healthy
+      - "8761:8761"
     healthcheck:
-      test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      test: "curl --fail --silent localhost:8761/actuator/health/readiness | grep UP || exit 1"
       interval: 20s
       timeout: 5s
       retries: 20
@@ -317,6 +314,9 @@ services:
     environment:
       SPRING_APPLICATION_NAME: "eurekaserver"
       OTEL_SERVICE_NAME: "eurekaserver"
+    depends_on:
+      configserver:
+        condition: service_healthy
 
   receiver:
     image: "giancharlock/receiver:s1"
@@ -348,6 +348,8 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+      receiver:
+        condition: service_healthy
     healthcheck:
       test: "curl --fail --silent localhost:9020/actuator/health/readiness | grep UP || exit 1"
       interval: 20s
@@ -378,6 +380,14 @@ services:
     extends:
       file: common-config.yml
       service: microservice-eureka-config
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition:
+          service_healthy
+      dbmanager:
+        condition: service_healthy
 
   gatewayserver:
     image: "giancharlock/gatewayserver:s1"
@@ -388,6 +398,8 @@ services:
       receiver:
         condition: service_healthy
       dbmanager:
+        condition: service_healthy
+      sender:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: "gatewayserver"

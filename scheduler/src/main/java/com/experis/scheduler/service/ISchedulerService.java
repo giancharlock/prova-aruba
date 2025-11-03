@@ -1,4 +1,4 @@
-package com.experis.sender.service;
+package com.experis.scheduler.service;
 
 
 public interface ISchedulerService {

@@ -1,4 +1,4 @@
-package com.experis.sender.functions;
+package com.experis.scheduler.functions;
 
 import com.experis.dbmanager.dto.InvoiceDto;
 import com.experis.dbmanager.enumerations.InvoiceStatus;

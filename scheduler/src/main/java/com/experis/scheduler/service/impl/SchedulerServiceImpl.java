@@ -1,6 +1,6 @@
-package com.experis.sender.service.impl;
+package com.experis.scheduler.service.impl;
 
-import com.experis.sender.service.ISchedulerService;
+import com.experis.scheduler.service.ISchedulerService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

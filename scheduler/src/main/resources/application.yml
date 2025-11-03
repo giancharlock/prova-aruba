@@ -1,5 +1,6 @@
 server:
   port: 9030
+
 spring:
   application:
     name: "scheduler"
@@ -7,19 +8,15 @@ spring:
     active: "prod"
   config:
     import: "optional:configserver:http://localhost:8071/"
-  cloud:
-    stream:
-      function:
-        definition: consumeAllInvoiceEvents
-      bindings:
-        # Consumer (ascolta da più topic)
-        consumeAllInvoiceEvents-in-0:
-          destination: INCOMING_INVOICE,INVOICE_VALID,INVOICE_INVALID,INVOICE_SENT,INVOICE_CANNOT_BE_SENT
-          group: ${spring.application.name}
-      kafka:
-        binder:
-          brokers: kafka:9092
 
+  # Configurazione Kafka per il DLT Consumer (Job 1)
+  kafka:
+    bootstrap-servers: localhost:9092 # Assumo sia gestito da configserver in prod
+    consumer:
+      group-id: "scheduler-dlt-consumer"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 management:
   endpoints:
@@ -51,7 +48,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8070/eureka/
+      defaultZone: http://eurekaserver:8761/eureka/
 
 info:
   app:
@@ -63,6 +60,33 @@ logging:
   level:
     com:
       experis:
-        scheduler: DEBUG
-  pattern:
-    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+        sender: DEBUG # Package name originale
+    org:
+      apache:
+        kafka: WARN
+
+# Proprietà personalizzate per i Job dello Scheduler
+app:
+  scheduler:
+    # URL per interrogare il microservizio dbmanager (Job 2)
+    dbmanager-url: "http://dbmanager/api" # Assumo 'dbmanager' sia il nome servizio in Eureka
+
+    # Percorsi dei file CSV di output (configurabili come da README)
+    dlt-report-path: "/reports/dlt_report.csv"
+    invoice-report-path: "/reports/invoice_status_report.csv"
+
+    # Configurazione dei Job (cron o fixedRate)
+    dlt-job:
+      # Esegui ogni 5 minuti
+      cron: "0 */5 * * * ?"
+      # Topic DLT da monitorare (elenco)
+      topics:
+        - "incoming-invoice.DLT"
+        - "sdi-notification.DLT"
+        - "sent-invoice.DLT"
+      # Timeout per il poll() di Kafka in millisecondi
+      poll-timeout: 10000
+
+    invoice-report-job:
+      # Esegui ogni 15 minuti
+      cron: "0 */15 * * * ?"

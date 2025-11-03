@@ -92,8 +92,12 @@ il dato va nella DLT per gestione successiva.
 Supponiamo che l'invio a SdI sia via email, server e porta configurabili
 
 # SCHEDULER SERVER
-Ha un job per la lettura delle DLT ed eventuale notifica dell'esistenza di problemi
-Ha un job per creare un semplice report con gli stati delle fatture e delle DLT di ogni microservizio. 
+Ha un job che gira ogni x minuti configurabili per la lettura delle DLT di tutti i microservizi 
+ed eventuale notifica dell'esistenza di problemi scrivendo un report che viene salvato come csv 
+in una cartella configurata
+Ha un job che gira ogni x minuti configurabili che interroga il dbmanagre per creare un semplice csv con:
+stato fattura, numero fattura, username customer, email customer, data creazione e chi ha creato, 
+data update e chi ha fatto update. Il file viene salvato in apposita cartella anch'essa configurabile  
 
 ## CONFIGURATION SERVER
 Per la gestione di configurazioni specifiche per l'ambiente
@@ -129,7 +133,12 @@ mvn compile jib:dockerBuild
 mvn jib:build
 
 ### In dev dentro ide
-docker compose up kafka postgres gateway backend grafana tempo prometheus minio alloy --build -d --force-recreate
+#### sevizi a supporto
+docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy --build -d --force-recreate
+#### microservizi
+docker compose up configserver eurekaserver dbmanager receiver sender gateway  --build -d --force-recreate
+
+docker compose down configserver eurekaserver dbmanager receiver sender gateway
 
 ### Avvio mail server per test
 docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog

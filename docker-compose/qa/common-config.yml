@@ -27,4 +27,4 @@ services:
     extends:
       service: microservice-configserver-config
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/
