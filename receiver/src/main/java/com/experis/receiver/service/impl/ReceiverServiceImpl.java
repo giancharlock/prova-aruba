@@ -57,7 +57,7 @@ public class ReceiverServiceImpl implements IReceiverService {
                 future.complete(createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED));
             } else {
                 log.info("Notifica SdI per {} inviata a DSI_NOTIFICATION.", cacheKey);
-                setupTimeout(cacheKey, future, "Notifica SdI");
+                setupTimeout(cacheKey, future, "business-dlt-out-0",notification);
             }
         } catch (Exception e) {
             log.error("Eccezione durante invio Kafka della notifica SdI per {}", cacheKey, e);
@@ -83,7 +83,7 @@ public class ReceiverServiceImpl implements IReceiverService {
                 future.complete(createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED));
             } else {
                 log.info("Fattura {} inviata a INCOMING_INVOICE.", cacheKey);
-                setupTimeout(cacheKey, future, "Fattura");
+                setupTimeout(cacheKey, future, "business-dlt-out-0",invoice);
             }
         } catch (Exception e) {
             log.error("Eccezione durante invio Kafka della fattura {}", cacheKey, e);
@@ -144,12 +144,13 @@ public class ReceiverServiceImpl implements IReceiverService {
                 .body(new ResponseDto(String.valueOf(status.value()), sender));
     }
 
-    private void setupTimeout(String cacheKey, CompletableFuture<ResponseEntity<ResponseDto>> future, String type) {
+    private void setupTimeout(String cacheKey, CompletableFuture<ResponseEntity<ResponseDto>> future, String dltout, Object obj) {
         future.orTimeout(callbackTimeoutMs, TimeUnit.MILLISECONDS).whenComplete((response, throwable) -> {
             if (throwable instanceof TimeoutException) {
-                log.warn("Timeout per {} {}. Spostamento in DLT (simulato).", type, cacheKey);
+                log.warn("Timeout per {} {}. Spostamento in DLT.", dltout, cacheKey);
+                streamBridge.send(dltout, obj);
                 asyncResponseCache.remove(cacheKey);
-                future.complete(createErrorResponse(type + " timeout", HttpStatus.GATEWAY_TIMEOUT));
+                future.complete(createErrorResponse( "Richiesta asincrona non completata entro il timeout", HttpStatus.GATEWAY_TIMEOUT));
             }
         });
     }

@@ -43,12 +43,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-stream-test-binder</artifactId>
-                <version>4.2.0</version>
-                <scope>test</scope>
-            </dependency>
+            <!-- Rimosso spring-cloud-stream-test-binder da dependencyManagement -->
             <dependency>
                 <groupId>com.experis</groupId>
                 <artifactId>commons</artifactId>

@@ -27,6 +27,12 @@ public class KafkaConsumerService {
     @Bean
     public Consumer<InvoiceDto> consumeIncomingInvoice() {
         return invoiceDto -> {
+            if (invoiceDto.getCustomer() == null) {
+                log.error("Received invoice with missing customer information. Discarding.");
+                // Optionally, send to a specific DLT for malformed messages
+                return;
+            }
+
             log.info("Received invoice {} for customer {}", invoiceDto.getInvoiceNumber(), invoiceDto.getCustomer().getCustomerId());
 
             boolean customerExists = dbManagerService.findCustomerById(invoiceDto.getCustomer().getCustomerId()).isPresent();

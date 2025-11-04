@@ -1,55 +1,55 @@
 server:
-  port: 9010
+  port: 8080
+
+app:
+  callback:
+    timeout-ms: 30000 # Timeout per la produzione
 
 spring:
   threads:
     virtual:
       enabled: true
   application:
-    name: "sender"
-  profiles:
-    active: "prod"
+    name: "receiver"
 
-  # --- Configurazione Mail Server Locale (per simulare invio SdI) ---
-  mail:
-    host: localhost
-    port: 1025 # Porta standard per mail server locali come MailHog o GreenMail
-    properties:
-      mail.smtp.auth: false
-      mail.smtp.starttls.enable: false
-      mail.debug: true
+  # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
+  kafka:
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
-  # --- Configurazione Spring Cloud Stream ---
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
     stream:
       function:
-        definition: consumeOutgoingInvoice
+        definition: consumeSavedInvoice
       bindings:
-        consumeOutgoingInvoice-in-0:
-          destination: OUTGOING_INVOICE
-        publishSentInvoice-out-0:
-          destination: SENT_INVOICE
+        publishInvoice-out-0:
+          destination: INCOMING_INVOICE
+        publishSdiNotification-out-0:
+          destination: DSI_NOTIFICATION
+        consumeSavedInvoice-in-0:
+          destination: SAVED_INCOMING_INVOICE
+          group: ${spring.application.name}
         business-dlt-out-0:
           destination: business.DLT
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers:
+            - localhost:9096
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
             delivery.timeout.ms: 120000
         bindings:
-          consumeOutgoingInvoice-in-0:
+          consumeSavedInvoice-in-0:
             consumer:
               enableDlq: true
-              dlqName: outgoing-invoice.DLT
+              dlqName: saved-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
-              use-native-decoding: true
-              header-mode: none
+              use-native-decoding: false
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
 
@@ -60,7 +60,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://eurekaserver:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
 
 management:
   endpoints:
@@ -68,11 +68,6 @@ management:
       exposure:
         include: "*"
   health:
-    mail:
-      enabled: false
-    web:
-      exposure:
-        include: "*"
     readiness-state:
       enabled: true
     liveness-state:
@@ -92,16 +87,15 @@ management:
 
 info:
   app:
-    name: "sender"
-    description: "Invoice App Sender Application"
+    name: "receiver"
+    description: "Invoice App Receiver Application"
     version: "1.0.0"
 
 logging:
   level:
     com:
       experis:
-        sender: DEBUG
-    org.springframework.mail: DEBUG
+        receiver: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 

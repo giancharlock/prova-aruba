@@ -11,8 +11,12 @@ spring:
       enabled: true
   application:
     name: "receiver"
-  profiles:
-    active: "prod"
+
+  # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
+  kafka:
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   cloud:
     openfeign:
       circuitbreaker:
@@ -32,7 +36,31 @@ spring:
           destination: business.DLT
       kafka:
         binder:
-          brokers: kafka:9092
+          brokers: localhost:9092
+          producer-properties:
+            retries: 3
+            retry.backoff.ms: 1000
+            delivery.timeout.ms: 120000
+        bindings:
+          consumeSavedInvoice-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: saved-invoice.DLT
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              use-native-decoding: false
+              header-mode: true
+              back-off-max-interval: 10000
+              back-off-multiplier: 2.0
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://eurekaserver:8761/eureka/
 
 management:
   endpoints:
@@ -56,15 +84,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-
-eureka:
-  instance:
-    preferIpAddress: true
-  client:
-    fetchRegistry: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://eurekaserver:8761/eureka/
 
 info:
   app:

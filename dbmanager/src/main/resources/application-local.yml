@@ -7,10 +7,8 @@ spring:
       enabled: true
   application:
     name: "dbmanager"
-  profiles:
-    active: "prod"
   datasource:
-    url: jdbc:postgresql://postgres:5432/invoice
+    url: jdbc:postgresql://localhost:5432/invoice
     driverClassName: org.postgresql.Driver
     username: invoice_user
     password: invoice_pwd
@@ -28,10 +26,12 @@ spring:
   depends_on:
     - postgres
 
-  # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
+  # --- Spring Kafka Producer/Consumer Configuration ---
   kafka:
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      auto-offset-reset: earliest # Inizia a leggere dal primo messaggio disponibile
 
   # --- Spring Cloud Stream Configuration ---
   cloud:
@@ -44,10 +44,13 @@ spring:
       bindings:
         consumeIncomingInvoice-in-0:
           destination: INCOMING_INVOICE
+          group: ${spring.application.name}
         consumeSdiNotification-in-0:
           destination: DSI_NOTIFICATION
+          group: ${spring.application.name}
         consumeSentInvoice-in-0:
           destination: SENT_INVOICE
+          group: ${spring.application.name}
         publishSavedInvoice-out-0:
           destination: SAVED_INCOMING_INVOICE
         publishOutgoingInvoice-out-0:
@@ -55,9 +58,11 @@ spring:
         business-dlt-out-0:
           destination: business.DLT
       kafka:
+        consumer:
+          auto-offset-reset: earliest
         binder:
           brokers:
-            - localhost:9092
+            - localhost:9096
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
@@ -69,7 +74,7 @@ spring:
               dlqName: incoming-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
-              use-native-decoding: true
+              use-native-decoding: false
               header-mode: none
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
@@ -79,7 +84,6 @@ spring:
               dlqName: sdi-notification.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
-              # Disable type headers for broader compatibility with producers
               use-native-decoding: true
               header-mode: none
               back-off-max-interval: 10000
@@ -100,7 +104,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://eurekaserver:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
 
 management:
   endpoints:
@@ -136,6 +140,11 @@ logging:
     com:
       experis:
         dbmanager: DEBUG
+    org:
+      springframework:
+        cloud:
+          stream: DEBUG # Aumenta il logging per Spring Cloud Stream
+        kafka: DEBUG # Aumenta il logging per Kafka
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]" 
 

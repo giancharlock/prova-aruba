@@ -1,11 +1,11 @@
 app:
   callback:
-    timeout-ms: 2000 # Timeout breve per i test
+    timeout-ms: 2000
 
 spring:
+  profile:
+    active: test
   cloud:
-    config:
-      enabled: false
     stream:
       function:
         definition: consumeSavedInvoice
