@@ -29,8 +29,8 @@ Si suppone venga mandato customer id, invoice number e stato
 ### RECEIVER SERVER
 Riceve fatture nuove e accende un thread virtuale per la gestione.
 Ha una propria cache per associare customer, fattura a callback di risposta per mantenere il meccanismo asincrono.
-Si occupa di creare un thread virtuale per l'invio a DBMANAGER usando la coda kafka INCOMING_INVOICE o SDI_NOTIFICATION.
-Il thread attende che la medesima fattura arrivi sulla coda SAVED_INCOMING_INVOICE per chiudere il giro e chiamare la callback
+Si occupa di creare un thread virtuale per l'invio a DBMANAGER usando la coda kafka incomingInvoice o SDI_NOTIFICATION.
+Il thread attende che la medesima fattura arrivi sulla coda savedInvoice per chiudere il giro e chiamare la callback
 notificando lo stato della fattura, che potrebbe anche essere INVALID_INVOICE.
 In caso non riesca a salvare dopo un certo numero di tentativi, la fattura finisce in DLT.
 In caso non riesca a chiamare la callback dopo un certo numero di tentativi, la fattura finisce in DLT.
@@ -44,8 +44,8 @@ salvaFatturaInterna ->
     Avvia un virtual thread che, per ogni fattura in ingresso:
     Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
     Mette fattura in stato INTERNAL_INVOICE_NEW
-    Invia a kafka su topic INCOMING_INVOICE
-    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su SAVED_INCOMING_INVOICE
+    Invia a kafka su topic incomingInvoice
+    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
     Ha un timeout oltre il quale manda la fattura in dlt
     Invia la risposta chiamando la callback
     Ha un timeout oltre il quale manda la fattura in dlt
@@ -56,8 +56,8 @@ salvaFatturaEsterna ->
     Avvia un virtual thread che, per ogni fattura in ingresso:
     Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
     Mette fattura in stato EXTERNAL_INVOICE
-    Invia a kafka su topic INCOMING_INVOICE
-    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su SAVED_INCOMING_INVOICE
+    Invia a kafka su topic incomingInvoice
+    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
     Invia la risposta chiamando la callback
     Ha un timeout oltre il quale manda la fattura in dlt
 
@@ -67,8 +67,8 @@ notificaSdI ->
     Avvia un virtual thread che, per ogni notifica in ingresso:
     Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
     Mette fattura in stato INTERNAL_INVOICE_DELIVERED, INTERNAL_INVOICE_DISCARDED o INTERNAL_INVOICE_NOT_DELIVERED
-    Invia a kafka su topic DSI_NOTIFICATION
-    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su SAVED_INCOMING_INVOICE
+    Invia a kafka su topic dsiNotification
+    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
     Invia la risposta chiamando la callback se esiste.
     Ha un timeout oltre il quale manda il dato in dlt
 
@@ -80,34 +80,34 @@ Dopo la validazione ci sarebbe la firma, che potrebbe essere svolta da un micros
 Accesso a REST per la ricerca di clienti e fatture e per la cancellazione di fatture e customers: 
 per uso statistico e consultazione e gestione manuale.
 Accesso comandato da kafka per creazione/update/cancellazione di fatture e customers.
-Legge da INCOMING_INVOICE le fatture in entrata, scrive su SAVED_INCOMING_INVOICE le fatture in entrata salvate e 
-scrive su OUTGOING_INVOICE le fatture valide e da spedire a SdI.
-Legge da SENT_INVOICE per fare update della fattura in caso di successo o errore. 
-Legger da DSI_NOTIFICATION per le ricevute delle fatture inviate a SdI e scrive su SAVED_INCOMING_INVOICE il risultato del salvataggio
+Legge da incomingInvoice le fatture in entrata, scrive su savedInvoice le fatture in entrata salvate e 
+scrive su outgoingInvoice le fatture valide e da spedire a SdI.
+Legge da sentInvoice per fare update della fattura in caso di successo o errore. 
+Legger da dsiNotification per le ricevute delle fatture inviate a SdI e scrive su savedInvoice il risultato del salvataggio
 Se non riesce a comunicare su sistemi esterni dopo un certo numero di tentativi, il dato va il DLT per gestione successiva
 
 #### FLUSSO di lavoro
-Il DbManager riceve su INCOMING_INVOICE e su DSI_NOTIFICATION:
+Il DbManager riceve su incomingInvoice e su dsiNotification:
 
-    Riceve su INCOMING_INVOICE
+    Riceve su incomingInvoice
     Avvia un thread per ogni fattura in ingresso
     Verifica se customerId esiste 
-    Se si salva la fattura e scrive su SAVED_INCOMING_INVOICE e su OUTGOING_INVOICE con stato INTERNAL_INVOICE_TOBE_SENT
-        Attende una risposta su SENT_INVOICE per aggiornare lo stato a INTERNAL_INVOICE_SENT o INTERNAL_INVOICE_NOT_SENT 
-    Se no salva la fattura e scrive su SAVED_INCOMING_INVOICE con stato INTERNAL_INVOICE_INVALID
+    Se si salva la fattura e scrive su savedInvoice e su outgoingInvoice con stato INTERNAL_INVOICE_TOBE_SENT
+        Attende una risposta su sentInvoice per aggiornare lo stato a INTERNAL_INVOICE_SENT o INTERNAL_INVOICE_NOT_SENT 
+    Se no salva la fattura e scrive su savedInvoice con stato INTERNAL_INVOICE_INVALID
     Il thread ha un timeout per mandare in DLT la fattura se non riesce a comunicare con qualche sistema esterno
 
-    Riceve su DSI_NOTIFICATION
+    Riceve su dsiNotification
     Avvia un thread per ogni fattura in ingresso
     Verifica se customerId e invoiceNumber esistono
     Se si carica cambia lo stato della fattura in INTERNAL_INVOICE_DELIVERED, INTERNAL_INVOICE_DISCARDED o INTERNAL_INVOICE_NOT_DELIVERED 
-    e scrive su SAVED_INCOMING_INVOICE  
-    Se no scrive su SAVED_INCOMING_INVOICE con stato INTERNAL_INVOICE_INVALID 
+    e scrive su savedInvoice  
+    Se no scrive su savedInvoice con stato INTERNAL_INVOICE_INVALID 
     Il thread ha un timeout per mandare in DLT la notifica ricevuta se non riesce a comunicare con qualche sistema esterno
 
 
 ### SENDER SERVER
-Legge da kafka OUTGOING_INVOICE per mandare a SdI e scrive su SENT_INVOICE il risultato della spedizione.
+Legge da kafka outgoingInvoice per mandare a SdI e scrive su sentInvoice il risultato della spedizione.
 Se dopo un certo numero di tentativi non riesce a comunicare ad altri sistemi il risultato della propria operazione,
 il dato va nella DLT per gestione successiva.
 Supponiamo che l'invio a SdI sia via email, server e porta configurabili

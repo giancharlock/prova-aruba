@@ -33,20 +33,21 @@ public class ReceiverServiceImpl implements IReceiverService {
     private static final ConcurrentMap<String, CompletableFuture<ResponseEntity<ResponseDto>>> asyncResponseCache = new ConcurrentHashMap<>();
 
     @Override
-    public CompletableFuture<ResponseEntity<ResponseDto>> saveInternalInvoice(InvoiceDto invoice) {
+    public ResponseEntity<ResponseDto> saveInternalInvoice(InvoiceDto invoice) {
         return processInvoice(invoice, InvoiceStatus.INTERNAL_INVOICE_NEW, "publishInvoice-out-0");
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<ResponseDto>> saveExternalInvoice(InvoiceDto invoice) {
+    public ResponseEntity<ResponseDto> saveExternalInvoice(InvoiceDto invoice) {
         return processInvoice(invoice, InvoiceStatus.EXTERNAL_INVOICE, "publishInvoice-out-0");
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<ResponseDto>> handleSdiNotification(SdiNotificationDto notification) {
+    public ResponseEntity<ResponseDto> handleSdiNotification(SdiNotificationDto notification) {
         String cacheKey = buildCacheKey(notification.getCustomerId(), notification.getInvoiceNumber());
         log.info("Ricevuta notifica SdI per {}. In attesa di salvataggio DB.", cacheKey);
 
+        // Creiamo il future per la gestione asincrona (timeout/callback)
         CompletableFuture<ResponseEntity<ResponseDto>> future = new CompletableFuture<>();
         asyncResponseCache.put(cacheKey, future);
 
@@ -54,25 +55,33 @@ public class ReceiverServiceImpl implements IReceiverService {
             boolean sent = streamBridge.send("publishSdiNotification-out-0", notification);
             if (!sent) {
                 log.error("Errore nell'invio Kafka della notifica SdI per {}", cacheKey);
-                future.complete(createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED));
+                // Rimuoviamo il future dalla cache se l'invio fallisce subito
+                asyncResponseCache.remove(cacheKey);
+                // Restituiamo errore 417 immediato
+                return createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED);
             } else {
-                log.info("Notifica SdI per {} inviata a DSI_NOTIFICATION.", cacheKey);
-                setupTimeout(cacheKey, future, "business-dlt-out-0",notification);
+                log.info("Notifica SdI per {} inviata a dsiNotification.", cacheKey);
+                // Avviamo il timeout per il future in background
+                setupTimeout(cacheKey, future, "business-dlt-out-0", notification);
+                // Restituiamo 202 Accepted immediato
+                return createSuccessResponse(ReceiverConstants.MESSAGE_202, HttpStatus.ACCEPTED);
             }
         } catch (Exception e) {
             log.error("Eccezione durante invio Kafka della notifica SdI per {}", cacheKey, e);
-            future.complete(createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+            // Rimuoviamo il future dalla cache se l'invio fallisce subito
+            asyncResponseCache.remove(cacheKey);
+            // Restituiamo 500 immediato
+            return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return future;
     }
 
-    private CompletableFuture<ResponseEntity<ResponseDto>> processInvoice(InvoiceDto invoice, InvoiceStatus status, String topic) {
+    private ResponseEntity<ResponseDto> processInvoice(InvoiceDto invoice, InvoiceStatus status, String topic) {
         invoice.setInvoiceStatus(status);
 
         String cacheKey = buildCacheKey(invoice.getCustomer().getCustomerId(), invoice.getInvoiceNumber());
         log.info("Processando fattura {}. Stato: {}. In attesa di salvataggio DB.", cacheKey, status);
 
+        // Creiamo il future per la gestione asincrona (timeout/callback)
         CompletableFuture<ResponseEntity<ResponseDto>> future = new CompletableFuture<>();
         asyncResponseCache.put(cacheKey, future);
 
@@ -80,21 +89,28 @@ public class ReceiverServiceImpl implements IReceiverService {
             boolean sent = streamBridge.send(topic, invoice);
             if (!sent) {
                 log.error("Errore nell'invio Kafka della fattura {}", cacheKey);
-                future.complete(createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED));
+                // Rimuoviamo il future dalla cache se l'invio fallisce subito
+                asyncResponseCache.remove(cacheKey);
+                // Restituiamo errore 417 immediato
+                return createErrorResponse(ReceiverConstants.MESSAGE_417_UPDATE, HttpStatus.EXPECTATION_FAILED);
             } else {
-                log.info("Fattura {} inviata a INCOMING_INVOICE.", cacheKey);
-                setupTimeout(cacheKey, future, "business-dlt-out-0",invoice);
+                log.info("Fattura {} inviata a incomingInvoice.", cacheKey);
+                // Avviamo il timeout per il future in background
+                setupTimeout(cacheKey, future, "business-dlt-out-0", invoice);
+                // Restituiamo 202 Accepted immediato
+                return createSuccessResponse(ReceiverConstants.MESSAGE_202, HttpStatus.ACCEPTED);
             }
         } catch (Exception e) {
             log.error("Eccezione durante invio Kafka della fattura {}", cacheKey, e);
-            future.complete(createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+            // Rimuoviamo il future dalla cache se l'invio fallisce subito
+            asyncResponseCache.remove(cacheKey);
+            // Restituiamo 500 immediato
+            return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return future;
     }
 
     @Bean
-    public Consumer<InvoiceDto> consumeSavedInvoice() {
+    public Consumer<InvoiceDto> savedInvoice() {
         return savedInvoice -> {
             String cacheKey = buildCacheKey(savedInvoice.getCustomer().getCustomerId(), savedInvoice.getInvoiceNumber());
 
@@ -133,15 +149,17 @@ public class ReceiverServiceImpl implements IReceiverService {
     }
 
     private ResponseEntity<ResponseDto> createErrorResponse(String sender, HttpStatus status) {
+        String statusCode = (status != null) ? String.valueOf(status.value()) : "500";
         return ResponseEntity
-                .status(status)
-                .body(new ResponseDto(String.valueOf(status.value()), sender));
+                .status(status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ResponseDto(statusCode, sender));
     }
 
     private ResponseEntity<ResponseDto> createSuccessResponse(String sender, HttpStatus status) {
+        String statusCode = (status != null) ? String.valueOf(status.value()) : "200";
         return ResponseEntity
-                .status(status)
-                .body(new ResponseDto(String.valueOf(status.value()), sender));
+                .status(status != null ? status : HttpStatus.OK)
+                .body(new ResponseDto(statusCode, sender));
     }
 
     private void setupTimeout(String cacheKey, CompletableFuture<ResponseEntity<ResponseDto>> future, String dltout, Object obj) {
@@ -149,8 +167,17 @@ public class ReceiverServiceImpl implements IReceiverService {
             if (throwable instanceof TimeoutException) {
                 log.warn("Timeout per {} {}. Spostamento in DLT.", dltout, cacheKey);
                 streamBridge.send(dltout, obj);
-                asyncResponseCache.remove(cacheKey);
-                future.complete(createErrorResponse( "Richiesta asincrona non completata entro il timeout", HttpStatus.GATEWAY_TIMEOUT));
+                asyncResponseCache.remove(cacheKey); // Assicurati di rimuovere dalla cache anche in caso di timeout
+                future.complete(createErrorResponse("Richiesta asincrona non completata entro il timeout", HttpStatus.GATEWAY_TIMEOUT));
+            }
+            // Se non è un TimeoutException, il future è stato completato normalmente (da savedInvoice) o con un altro errore
+            // In ogni caso, la rimozione dalla cache avviene in savedInvoice o qui
+            else if (response != null) {
+                // Completato normalmente, la cache è già stata rimossa da savedInvoice
+            } else if (throwable != null) {
+                // Completato con un errore diverso dal timeout
+                log.error("Future completato con errore imprevisto per {}: {}", cacheKey, throwable.getMessage());
+                asyncResponseCache.remove(cacheKey); // Rimuovi in caso di errore
             }
         });
     }

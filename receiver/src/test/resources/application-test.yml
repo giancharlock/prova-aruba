@@ -8,14 +8,14 @@ spring:
   cloud:
     stream:
       function:
-        definition: consumeSavedInvoice
+        definition: savedInvoice
       bindings:
         publishInvoice-out-0:
-          destination: INCOMING_INVOICE
+          destination: incomingInvoice
         publishSdiNotification-out-0:
-          destination: DSI_NOTIFICATION
-        consumeSavedInvoice-in-0:
-          destination: SAVED_INCOMING_INVOICE
+          destination: dsiNotification
+        savedInvoice-in-0:
+          destination: savedInvoice
           group: ${spring.application.name}
         business-dlt-out-0:
           destination: business.DLT

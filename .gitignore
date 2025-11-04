@@ -36,3 +36,4 @@ build/
 .vscode/
 /docker-compose/prod/.data/minio/
 /docker-compose/default/.data/
+/scheduler/reports/dlt_report.csv

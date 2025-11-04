@@ -14,6 +14,8 @@ spring:
 
   # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
   kafka:
+    consumer:
+      auto-offset-reset: earliest
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
@@ -23,17 +25,21 @@ spring:
         enabled: true
     stream:
       function:
-        definition: consumeSavedInvoice
+        definition: savedInvoice
       bindings:
         publishInvoice-out-0:
-          destination: INCOMING_INVOICE
+          destination: incomingInvoice-in-0
+          content-type: application/json
         publishSdiNotification-out-0:
-          destination: DSI_NOTIFICATION
-        consumeSavedInvoice-in-0:
-          destination: SAVED_INCOMING_INVOICE
+          destination: sdiNotification-in-0
+          content-type: application/json
+        savedInvoice-in-0:
+          destination: savedInvoice-in-0
           group: ${spring.application.name}
+          content-type: application/json
         business-dlt-out-0:
-          destination: business.DLT
+          destination: receiver.DLT
+          content-type: application/json
       kafka:
         binder:
           brokers:
@@ -43,7 +49,7 @@ spring:
             retry.backoff.ms: 1000
             delivery.timeout.ms: 120000
         bindings:
-          consumeSavedInvoice-in-0:
+          savedInvoice-in-0:
             consumer:
               enableDlq: true
               dlqName: saved-invoice.DLT

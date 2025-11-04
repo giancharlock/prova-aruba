@@ -23,17 +23,17 @@ spring:
         enabled: true
     stream:
       function:
-        definition: consumeSavedInvoice
+        definition: savedInvoice
       bindings:
         publishInvoice-out-0:
-          destination: INCOMING_INVOICE
+          destination: incomingInvoice-in-0
         publishSdiNotification-out-0:
-          destination: DSI_NOTIFICATION
-        consumeSavedInvoice-in-0:
-          destination: SAVED_INCOMING_INVOICE
+          destination: sdiNotification-in-0
+        savedInvoice-in-0:
+          destination: savedInvoice-in-0
           group: ${spring.application.name}
         business-dlt-out-0:
-          destination: business.DLT
+          destination: receiver.DLT
       kafka:
         binder:
           brokers: localhost:9092
@@ -42,7 +42,7 @@ spring:
             retry.backoff.ms: 1000
             delivery.timeout.ms: 120000
         bindings:
-          consumeSavedInvoice-in-0:
+          savedInvoice-in-0:
             consumer:
               enableDlq: true
               dlqName: saved-invoice.DLT

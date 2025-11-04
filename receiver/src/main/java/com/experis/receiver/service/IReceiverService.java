@@ -5,37 +5,35 @@ import com.experis.dbmanager.dto.ResponseDto;
 import com.experis.dbmanager.dto.SdiNotificationDto;
 import org.springframework.http.ResponseEntity;
 
-import java.util.concurrent.CompletableFuture;
-
 public interface IReceiverService {
 
     /**
      * Gestisce la ricezione di una fattura interna.
      * La imposta come INTERNAL_INVOICE_NEW e la invia a Kafka.
-     * Restituisce una risposta immediata (202 Accepted) e gestisce la callback asincrona.
+     * Restituisce una risposta immediata (es. 202 Accepted).
      *
      * @param invoice - InvoiceDto Object
-     * @return un CompletableFuture che si risolverà con la risposta finale.
+     * @return una ResponseEntity immediata.
      */
-    CompletableFuture<ResponseEntity<ResponseDto>> saveInternalInvoice(InvoiceDto invoice);
+    ResponseEntity<ResponseDto> saveInternalInvoice(InvoiceDto invoice);
 
     /**
      * Gestisce la ricezione di una fattura esterna.
      * La imposta come EXTERNAL_INVOICE e la invia a Kafka.
-     * Restituisce una risposta immediata (202 Accepted) e gestisce la callback asincrona.
+     * Restituisce una risposta immediata (es. 202 Accepted).
      *
      * @param invoice - InvoiceDto Object
-     * @return un CompletableFuture che si risolverà con la risposta finale.
+     * @return una ResponseEntity immediata.
      */
-    CompletableFuture<ResponseEntity<ResponseDto>> saveExternalInvoice(InvoiceDto invoice);
+    ResponseEntity<ResponseDto> saveExternalInvoice(InvoiceDto invoice);
 
     /**
      * Riceve una notifica da SdI (tramite endpoint HTTP).
-     * La inoltra al topic Kafka DSI_NOTIFICATION.
+     * La inoltra al topic Kafka dsiNotification.
      *
      * @param notification - SdiNotificationDto Object
-     * @return un CompletableFuture che si risolverà con la risposta finale.
+     * @return una ResponseEntity immediata.
      */
-    CompletableFuture<ResponseEntity<ResponseDto>> handleSdiNotification(SdiNotificationDto notification);
+    ResponseEntity<ResponseDto> handleSdiNotification(SdiNotificationDto notification);
 
 }
