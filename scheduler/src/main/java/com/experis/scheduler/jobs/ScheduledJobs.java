@@ -59,7 +59,6 @@ public class ScheduledJobs {
 
         List<DltMessageDto> dltMessages = new ArrayList<>();
         try {
-            // Eseguiamo il poll() manuale dei topic DLT
             ConsumerRecords<String, byte[]> records = dltConsumer.poll(dltPollTimeout);
 
             if (records.isEmpty()) {
@@ -73,15 +72,12 @@ public class ScheduledJobs {
                 dltMessages.add(mapRecordToDltDto(record));
             }
 
-            // Scrivi il report
             reportService.writeReport(properties.getDltReportPath(), dltMessages, DltMessageDto.class);
 
-            // Conferma il commit dell'offset
             dltConsumer.commitSync();
 
         } catch (Exception e) {
             log.error("Errore durante il Job 1 (Lettura DLT)", e);
-            // Non facciamo il commit se c'è un errore, così riproviamo al prossimo giro
         }
     }
 
@@ -94,7 +90,6 @@ public class ScheduledJobs {
         log.info("Esecuzione Job 2: Report Stato Fatture...");
 
         try {
-            // Chiama dbmanager
             List<InvoiceReportDto> invoices = dbManagerClient.fetchAllInvoices().block(Duration.ofSeconds(30));
 
             if (invoices == null || invoices.isEmpty()) {
@@ -102,7 +97,6 @@ public class ScheduledJobs {
                 return;
             }
 
-            // Scrivi il report
             reportService.writeReport(properties.getInvoiceReportPath(), invoices, InvoiceReportDto.class);
 
         } catch (Exception e) {

@@ -21,42 +21,39 @@ public class SenderFunctions {
     private final StreamBridge streamBridge;
 
     /**
-     * Consuma le fatture dal topic OUTGOING_INVOICE,
+     * Consuma le fatture dal topic outgoingInvoice,
      * tenta l'invio via email (simulazione SdI) e
-     * pubblica l'esito (SENT o NOT_SENT) sul topic SENT_INVOICE.
+     * pubblica l'esito (SENT o NOT_SENT) sul topic sentInvoice.
      */
     @Bean
-    public Consumer<InvoiceDto> consumeOutgoingInvoice() {
+    public Consumer<InvoiceDto> outgoingInvoice() {
         return invoiceDto -> {
             log.info("Ricevuta fattura {} da inviare a SdI (simulato via email).", invoiceDto.getInvoiceNumber());
 
             InvoiceStatus newStatus;
             try {
-                // 1. Simula l'invio a SdI
+                //Simula l'invio a SdI
                 sendEmailNotification(invoiceDto);
                 log.info("Invio a SdI (email) per fattura {} completato con successo.", invoiceDto.getInvoiceNumber());
                 newStatus = InvoiceStatus.INTERNAL_INVOICE_SENT;
 
             } catch (Exception e) {
-                // 2. Gestione fallimento invio email
                 log.error("Errore durante l'invio a SdI (email) per fattura {}: {}", invoiceDto.getInvoiceNumber(), e.getMessage());
                 newStatus = InvoiceStatus.INTERNAL_INVOICE_NOT_SENT;
-                // NOTA: Non rilanciamo l'eccezione. Vogliamo che il fallimento sia gestito
-                // e notificato a dbmanager, non che il binder ritenti all'infinito l'invio email.
             }
 
             invoiceDto.setInvoiceStatus(newStatus);
 
-            // 3. Invia il risultato (successo o fallimento) al topic SENT_INVOICE
+            // Invia il risultato (successo o fallimento) al topic sentInvoice
             // Se questo invio fallisce, l'intera funzione consumer sarà ritentata dal binder Kafka.
             boolean sent = streamBridge.send("publishSentInvoice-out-0", invoiceDto);
 
             if (sent) {
-                log.info("Stato aggiornato {} inviato a SENT_INVOICE per fattura {}.", invoiceDto.getInvoiceStatus(), invoiceDto.getInvoiceNumber());
+                log.info("Stato aggiornato {} inviato a sentInvoice per fattura {}.", invoiceDto.getInvoiceStatus(), invoiceDto.getInvoiceNumber());
             } else {
-                log.error("Errore critico: Impossibile inviare a SENT_INVOICE per fattura {}. Il messaggio sarà ritentato.", invoiceDto.getInvoiceNumber());
+                log.error("Errore critico: Impossibile inviare a sentInvoice per fattura {}. Il messaggio sarà ritentato.", invoiceDto.getInvoiceNumber());
                 // Rilancia un'eccezione per forzare il retry del binder
-                throw new RuntimeException("Impossibile inviare a SENT_INVOICE. Ritentativo in corso.");
+                throw new RuntimeException("Impossibile inviare a sentInvoice. Ritentativo in corso.");
             }
         };
     }
@@ -66,14 +63,15 @@ public class SenderFunctions {
      */
     private void sendEmailNotification(InvoiceDto invoiceDto) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("fatture@sender.com"); // Mittente fittizio
-        message.setTo("sdi@governo.it");       // Destinatario fittizio per SdI
 
         // Cerca di usare l'email del cliente per il ReplyTo
         String customerEmail = "cliente@sconosciuto.com";
         if (invoiceDto.getCustomer() != null && invoiceDto.getCustomer().getEmail() != null) {
             customerEmail = invoiceDto.getCustomer().getEmail();
         }
+
+        message.setFrom(customerEmail);
+        message.setTo("sdi@governo.it");
         message.setReplyTo(customerEmail);
         message.setSubject("Invio Fattura SdI: " + invoiceDto.getInvoiceNumber());
 

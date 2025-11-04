@@ -17,8 +17,8 @@ spring:
       hibernate:
         jdbc:
           batch_size: 20
-        order_inserts: true
-        order_updates: true
+        order-inserts: true
+        order-updates: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
@@ -26,40 +26,52 @@ spring:
   depends_on:
     - postgres
 
-  # --- Spring Kafka Producer/Consumer Configuration ---
   kafka:
+    bootstrap-servers: localhost:9096
+    consumer:
+      group-id: "dbmanager-dlt-consumer"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      auto-offset-reset: earliest # Inizia a leggere dal primo messaggio disponibile
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
 
-  # --- Spring Cloud Stream Configuration ---
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
+    function:
+      definition: incomingInvoice;sdiNotification;sentInvoice
     stream:
-      function:
-        definition: consumeIncomingInvoice;consumeSdiNotification;consumeSentInvoice
       bindings:
-        consumeIncomingInvoice-in-0:
-          destination: INCOMING_INVOICE
+        incomingInvoice-in-0:
+          destination: save-invoice
           group: ${spring.application.name}
-        consumeSdiNotification-in-0:
-          destination: DSI_NOTIFICATION
-          group: ${spring.application.name}
-        consumeSentInvoice-in-0:
-          destination: SENT_INVOICE
-          group: ${spring.application.name}
+          content-type: application/json
         publishSavedInvoice-out-0:
-          destination: SAVED_INCOMING_INVOICE
+          destination: invoice-saved
+          content-type: application/json
         publishOutgoingInvoice-out-0:
-          destination: OUTGOING_INVOICE
+          destination: send-invoice
+          content-type: application/json
+        sentInvoice-in-0:
+          destination: invoice-sent
+          group: ${spring.application.name}
+          content-type: application/json
+        sdiNotification-in-0:
+          destination: update-invoice
+          group: ${spring.application.name}
+          content-type: application/json
+        publishSdiNotification-out-0:
+          destination: invoice-updated
+          content-type: application/json
         business-dlt-out-0:
-          destination: business.DLT
+          destination: dbmanager.DLT
+          content-type: application/json
       kafka:
-        consumer:
-          auto-offset-reset: earliest
         binder:
           brokers:
             - localhost:9096
@@ -68,31 +80,30 @@ spring:
             retry.backoff.ms: 1000
             delivery.timeout.ms: 120000
         bindings:
-          consumeIncomingInvoice-in-0:
+          incomingInvoice-in-0:
             consumer:
               enableDlq: true
               dlqName: incoming-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
-              use-native-decoding: false
-              header-mode: none
+              use-native-decoding: true
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
-          consumeSdiNotification-in-0:
+          sdiNotification-in-0:
             consumer:
               enableDlq: true
               dlqName: sdi-notification.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
               use-native-decoding: true
-              header-mode: none
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
-          consumeSentInvoice-in-0:
+          sentInvoice-in-0:
             consumer:
               enableDlq: true
               dlqName: sent-invoice.DLT
               max-attempts: 3
+              use-native-decoding: true
               back-off-initial-interval: 1000
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
@@ -112,6 +123,9 @@ management:
       exposure:
         include: "*"
   health:
+    web:
+      exposure:
+        include: "*"
     readiness-state:
       enabled: true
     liveness-state:
@@ -137,16 +151,11 @@ info:
 
 logging:
   level:
-    com:
-      experis:
-        dbmanager: DEBUG
-    org:
-      springframework:
-        cloud:
-          stream: DEBUG # Aumenta il logging per Spring Cloud Stream
-        kafka: DEBUG # Aumenta il logging per Kafka
+    com.experis.dbmanager: DEBUG
+    org.springframework.cloud.stream: INFO
+    org.springframework.kafka: INFO
   pattern:
-    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]" 
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
 resilience4j.circuitbreaker:
   configs:

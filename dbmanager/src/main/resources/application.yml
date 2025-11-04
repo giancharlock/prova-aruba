@@ -7,8 +7,6 @@ spring:
       enabled: true
   application:
     name: "dbmanager"
-  profiles:
-    active: "prod"
   datasource:
     url: jdbc:postgresql://postgres:5432/invoice
     driverClassName: org.postgresql.Driver
@@ -28,70 +26,87 @@ spring:
   depends_on:
     - postgres
 
-  # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
   kafka:
+    bootstrap-servers: kafka:9096
+    consumer:
+      group-id: "dbmanager-dlt-consumer"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
 
-  # --- Spring Cloud Stream Configuration ---
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
-    stream:
       function:
-        definition: consumeIncomingInvoice;consumeSdiNotification;consumeSentInvoice
+        definition: incomingInvoice;sdiNotification;sentInvoice
+    stream:
       bindings:
-        consumeIncomingInvoice-in-0:
-          destination: INCOMING_INVOICE
-        consumeSdiNotification-in-0:
-          destination: DSI_NOTIFICATION
-        consumeSentInvoice-in-0:
-          destination: SENT_INVOICE
+        incomingInvoice-in-0:
+          group: ${spring.application.name}
+          content-type: application/json
+        sdiNotification-in-0:
+          group: ${spring.application.name}
+          content-type: application/json
+        sentInvoice-in-0:
+          group: ${spring.application.name}
+          content-type: application/json
         publishSavedInvoice-out-0:
-          destination: SAVED_INCOMING_INVOICE
+          destination: savedInvoice-in-0
+          content-type: application/json
         publishOutgoingInvoice-out-0:
-          destination: OUTGOING_INVOICE
+          destination: outgoingInvoice-in-0
+          content-type: application/json
         business-dlt-out-0:
-          destination: business.DLT
+          destination: dbmanager.DLT
+          content-type: application/json
       kafka:
         binder:
           brokers:
-            - localhost:9092
+            - kafka:9092
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
             delivery.timeout.ms: 120000
         bindings:
-          consumeIncomingInvoice-in-0:
+          incomingInvoice-in-0:
             consumer:
               enableDlq: true
               dlqName: incoming-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
               use-native-decoding: true
-              header-mode: none
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
-          consumeSdiNotification-in-0:
+              configuration:
+                spring.json.value.default.type: com.experis.dbmanager.dto.InvoiceDto
+          sdiNotification-in-0:
             consumer:
               enableDlq: true
               dlqName: sdi-notification.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
-              # Disable type headers for broader compatibility with producers
               use-native-decoding: true
-              header-mode: none
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
-          consumeSentInvoice-in-0:
+              configuration:
+                spring.json.value.default.type: com.experis.dbmanager.dto.SdiNotificationDto
+          sentInvoice-in-0:
             consumer:
               enableDlq: true
               dlqName: sent-invoice.DLT
               max-attempts: 3
+              use-native-decoding: false
               back-off-initial-interval: 1000
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
+              configuration:
+                spring.json.value.default.type: com.experis.dbmanager.dto.InvoiceDto
 
 eureka:
   instance:
@@ -133,9 +148,9 @@ info:
 
 logging:
   level:
-    com:
-      experis:
-        dbmanager: DEBUG
+    com.experis.dbmanager: DEBUG
+    org.springframework.cloud.stream: INFO # Riportiamo a INFO per non inondare i log
+    org.springframework.kafka: INFO
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]" 
 

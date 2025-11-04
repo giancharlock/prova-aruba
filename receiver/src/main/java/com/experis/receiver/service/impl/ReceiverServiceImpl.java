@@ -75,6 +75,60 @@ public class ReceiverServiceImpl implements IReceiverService {
         }
     }
 
+    @Override
+    public void handleSavedInvoice(InvoiceDto savedInvoice) {
+        String cacheKey = buildCacheKey(savedInvoice.getCustomer().getCustomerId(), savedInvoice.getInvoiceNumber());
+
+        CompletableFuture<ResponseEntity<ResponseDto>> future = asyncResponseCache.remove(cacheKey);
+
+        if (future == null) {
+            log.warn("Ricevuta fattura salvata per {}, ma non c'è nessuna richiesta asincrona in attesa.", cacheKey);
+            return;
+        }
+
+        if (future.isDone()) {
+            log.warn("Ricevuta fattura salvata per {}, ma la richiesta era già stata completata (probabilmente timeout).", cacheKey);
+            return;
+        }
+
+        log.info("Ricevuta conferma salvataggio per {}. Stato: {}", cacheKey, savedInvoice.getInvoiceStatus());
+
+        if (savedInvoice.getCallback() != null && !savedInvoice.getCallback().isBlank()) {
+            try {
+                log.info("Esecuzione callback per {} a {}", cacheKey, savedInvoice.getCallback());
+                restTemplate.postForEntity(savedInvoice.getCallback(), savedInvoice, String.class);
+                future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
+            } catch (Exception e) {
+                log.error("Errore durante l'esecuzione della callback per {} a {}: {}", cacheKey, savedInvoice.getCallback(), e.getMessage());
+                streamBridge.send("business-dlt-out-0", savedInvoice);
+                future.complete(createErrorResponse("Errore Callback", HttpStatus.SERVICE_UNAVAILABLE));
+            }
+        } else {
+            future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
+        }
+    }
+
+    @Override
+    public void handleUpdatedInvoice(SdiNotificationDto sdiNotificationDto) {
+        String cacheKey = buildCacheKey(sdiNotificationDto.getCustomerId(), sdiNotificationDto.getInvoiceNumber());
+
+        CompletableFuture<ResponseEntity<ResponseDto>> future = asyncResponseCache.remove(cacheKey);
+
+        if (future == null) {
+            log.warn("Ricevuta di update della fattura per notifica SdI {}, ma non c'è nessuna richiesta asincrona in attesa.", cacheKey);
+            return;
+        }
+
+        if (future.isDone()) {
+            log.warn("Ricevuta di update della fattura per notifica SdI {}, ma la richiesta era già stata completata (probabilmente timeout).", cacheKey);
+            return;
+        }
+
+        log.info("Ricevuta di update della fattura per notifica SdI {}. Stato: {}", cacheKey, sdiNotificationDto.getStatus());
+
+        future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
+    }
+
     private ResponseEntity<ResponseDto> processInvoice(InvoiceDto invoice, InvoiceStatus status, String topic) {
         invoice.setInvoiceStatus(status);
 
@@ -109,42 +163,7 @@ public class ReceiverServiceImpl implements IReceiverService {
         }
     }
 
-    @Bean
-    public Consumer<InvoiceDto> savedInvoice() {
-        return savedInvoice -> {
-            String cacheKey = buildCacheKey(savedInvoice.getCustomer().getCustomerId(), savedInvoice.getInvoiceNumber());
-
-            CompletableFuture<ResponseEntity<ResponseDto>> future = asyncResponseCache.remove(cacheKey);
-
-            if (future == null) {
-                log.warn("Ricevuta fattura salvata per {}, ma non c'è nessuna richiesta asincrona in attesa.", cacheKey);
-                return;
-            }
-
-            if (future.isDone()) {
-                log.warn("Ricevuta fattura salvata per {}, ma la richiesta era già stata completata (probabilmente timeout).", cacheKey);
-                return;
-            }
-
-            log.info("Ricevuta conferma salvataggio per {}. Stato: {}", cacheKey, savedInvoice.getInvoiceStatus());
-
-            if (savedInvoice.getCallback() != null && !savedInvoice.getCallback().isBlank()) {
-                try {
-                    log.info("Esecuzione callback per {} a {}", cacheKey, savedInvoice.getCallback());
-                    restTemplate.postForEntity(savedInvoice.getCallback(), savedInvoice, String.class);
-                    future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
-                } catch (Exception e) {
-                    log.error("Errore durante l'esecuzione della callback per {} a {}: {}", cacheKey, savedInvoice.getCallback(), e.getMessage());
-                    streamBridge.send("business-dlt-out-0", savedInvoice);
-                    future.complete(createErrorResponse("Errore Callback", HttpStatus.SERVICE_UNAVAILABLE));
-                }
-            } else {
-                future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
-            }
-        };
-    }
-
-    private String buildCacheKey(Integer customerId, Integer invoiceNumber) {
+    public static String buildCacheKey(Integer customerId, Integer invoiceNumber) {
         return (customerId != null ? customerId : "NA") + "-" + (invoiceNumber != null ? invoiceNumber : "NA");
     }
 

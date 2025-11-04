@@ -36,4 +36,6 @@ public interface IReceiverService {
      */
     ResponseEntity<ResponseDto> handleSdiNotification(SdiNotificationDto notification);
 
+    void handleSavedInvoice(InvoiceDto savedInvoice);
+    void handleUpdatedInvoice(SdiNotificationDto sdiNotificationDto);
 }
