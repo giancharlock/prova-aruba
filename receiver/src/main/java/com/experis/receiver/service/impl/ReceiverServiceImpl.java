@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -131,6 +132,7 @@ public class ReceiverServiceImpl implements IReceiverService {
 
     private ResponseEntity<ResponseDto> processInvoice(InvoiceDto invoice, InvoiceStatus status, String topic) {
         invoice.setInvoiceStatus(status);
+        invoice.setStatusLastUpdatedAt(LocalDateTime.now());
 
         String cacheKey = buildCacheKey(invoice.getCustomer().getCustomerId(), invoice.getInvoiceNumber());
         log.info("Processando fattura {}. Stato: {}. In attesa di salvataggio DB.", cacheKey, status);

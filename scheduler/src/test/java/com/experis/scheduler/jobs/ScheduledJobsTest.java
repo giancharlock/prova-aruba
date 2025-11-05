@@ -107,7 +107,7 @@ class ScheduledJobsTest {
         DltMessageDto capturedDto = capturedList.get(0);
         assertThat(capturedDto.getKey()).isEqualTo(key);
         assertThat(capturedDto.getTopic()).isEqualTo(dltTopic);
-        assertThat(capturedDto.getPayloadPreview()).contains("messaggio illeggibile");
+        assertThat(capturedDto.getPayload()).contains("messaggio illeggibile");
         assertThat(capturedDto.getHeaders()).contains("Errore di deserializzazione");
     }
 

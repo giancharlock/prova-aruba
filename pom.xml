@@ -30,7 +30,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <spring-cloud.version>2023.0.1</spring-cloud.version> <!-- Downgraded to stable version -->
+        <spring-cloud.version>2023.0.2</spring-cloud.version> <!-- Downgraded to stable version -->
         <lombok.version>1.18.36</lombok.version>
         <java.version>21</java.version>
         <otelVersion>2.11.0</otelVersion>

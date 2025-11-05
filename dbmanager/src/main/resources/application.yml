@@ -145,9 +145,9 @@ info:
 
 logging:
   level:
-    com.experis.dbmanager: DEBUG
-    org.springframework.cloud.stream: INFO
-    org.springframework.kafka: INFO
+    com.experis.dbmanager: ERROR
+    org.springframework.cloud.stream: ERROR
+    org.springframework.kafka: ERROR
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]" 
 

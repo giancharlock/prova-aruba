@@ -29,13 +29,23 @@ public class KafkaConsumerService {
 
         InvoiceDto savedInvoice;
         if (customerExists) {
-            log.info("Customer {} exists. Processing invoice.", invoiceDto.getCustomer().getCustomerId());
-            invoiceDto.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
-            savedInvoice = dbManagerService.createInvoice(invoiceDto.getCustomer().getCustomerId(), invoiceDto);
+            log.info("Customer {} exists. Processing invoice with status {}.", invoiceDto.getCustomer().getCustomerId(), invoiceDto.getInvoiceStatus());
+            if (!isInternalInvoice(invoiceDto)) {
+                dbManagerService.createInvoice(invoiceDto.getCustomer().getCustomerId(), invoiceDto);
+            }else {
+                invoiceDto.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_TOBE_SENT);
+                savedInvoice = dbManagerService.createInvoice(invoiceDto.getCustomer().getCustomerId(), invoiceDto);
 
-            streamBridge.send("publishSavedInvoice-out-0", savedInvoice);
-            streamBridge.send("publishOutgoingInvoice-out-0", savedInvoice);
-            log.info("Invoice {} sent to SAVED and OUTGOING topics.", savedInvoice.getInvoiceNumber());
+                streamBridge.send("publishSavedInvoice-out-0", savedInvoice);
+                log.info("Invoice {} sent to SAVED topic.", savedInvoice.getInvoiceNumber());
+
+                // Send to outgoing topic only if it's an internal invoice
+                if (isInternalInvoice(savedInvoice)) {
+                    streamBridge.send("publishOutgoingInvoice-out-0", savedInvoice);
+                    log.info("Internal invoice {} sent to OUTGOING topic.", savedInvoice.getInvoiceNumber());
+                }
+            }
+
         } else {
             log.warn("Customer {} does not exist. Marking invoice as invalid.", invoiceDto.getCustomer().getCustomerId());
             invoiceDto.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_INVALID);
@@ -44,6 +54,13 @@ public class KafkaConsumerService {
             streamBridge.send("publishSavedInvoice-out-0", savedInvoice);
             log.info("Invoice {} sent to SAVED topic as invalid.", savedInvoice.getInvoiceNumber());
         }
+    }
+
+    private boolean isInternalInvoice(InvoiceDto invoice) {
+        if(invoice.getInvoiceStatus().equals(InvoiceStatus.EXTERNAL_INVOICE)){
+            return false;
+            }
+        return true;
     }
 
     public void processSdiNotification(SdiNotificationDto notification) {

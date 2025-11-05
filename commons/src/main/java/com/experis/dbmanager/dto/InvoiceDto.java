@@ -26,4 +26,5 @@ public class InvoiceDto implements Serializable {
     private String updatedBy;
     private CustomerDto customer;
     private String callback;
+    private LocalDateTime statusLastUpdatedAt;
 }

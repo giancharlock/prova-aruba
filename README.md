@@ -156,9 +156,9 @@ mvn compile jib:dockerBuild
 mvn jib:build
 
 #### sevizi a supporto
-docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog --build -d --force-recreate
+docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog redis --build -d --force-recreate
 
-docker compose down kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog
+docker compose down kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog redis
 
 #### microservizi
 docker compose up eurekaserver dbmanager receiver sender gatewayserver  --build -d --force-recreate
@@ -189,6 +189,12 @@ che trova nel tuo progetto in src/test/scala.
 
 Se vuoi eseguire una simulazione specifica, puoi usare l'opzione 
 
-    -Dgatling.simulationClass:Shell Scriptmvn gatling:test -Dgatling.simulationClass=com.experis.receiver.simulations.YourSimulationName
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadExternalInvoiceTest1"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadInternalInvoiceTest1"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadSdiNotificationsTest1"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadExternalInvoiceTest"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadInternalInvoiceTest"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadSdiNotificationsTest"
+
 
 

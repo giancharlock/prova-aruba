@@ -110,9 +110,9 @@ info:
 
 logging:
   level:
-    com.experis.sender: DEBUG
-    org.springframework.cloud.stream: INFO
-    org.springframework.kafka: INFO
+    com.experis.sender: ERROR
+    org.springframework.cloud.stream: ERROR
+    org.springframework.kafka: ERROR
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 

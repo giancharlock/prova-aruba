@@ -20,6 +20,9 @@ public class DltMessageDto {
     @CsvBindByName(column = "Topic_DLT")
     private String topic;
 
+    @CsvBindByName(column = "Type")
+    private String type;
+
     @CsvBindByName(column = "Partition")
     private int partition;
 
@@ -32,6 +35,6 @@ public class DltMessageDto {
     @CsvBindByName(column = "Headers")
     private String headers;
 
-    @CsvBindByName(column = "Payload_Preview")
-    private String payloadPreview;
+    @CsvBindByName(column = "Payload")
+    private String payload;
 }

@@ -58,6 +58,7 @@ public class ApplicationMapper {
         invoiceDto.setUpdatedBy(invoice.getUpdatedBy());
         invoiceDto.setCustomer(toCustomerDto(customer));
         invoiceDto.setCallback(invoice.getCallback());
+        invoiceDto.setStatusLastUpdatedAt(invoice.getStatusLastUpdatedAt());
         return invoiceDto;
     }
 
@@ -77,6 +78,7 @@ public class ApplicationMapper {
             invoice.setCustomerId(invoiceDto.getCustomer().getCustomerId());
         }
         invoice.setCallback(invoiceDto.getCallback());
+        invoice.setStatusLastUpdatedAt(invoiceDto.getStatusLastUpdatedAt());
         return invoice;
     }
 
