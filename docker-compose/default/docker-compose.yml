@@ -283,6 +283,16 @@ services:
       file: common-config.yml
       service: microservice-base-config
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
   eurekaserver:
     image: "giancharlock/eurekaserver:s1"
     container_name: eurekaserver-ms
@@ -364,6 +374,8 @@ services:
         condition: service_healthy
       dbmanager:
         condition: service_healthy
+      mailhog:
+        condition: service_started
 
   gatewayserver:
     image: "giancharlock/gatewayserver:s1"

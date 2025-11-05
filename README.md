@@ -1,7 +1,8 @@
 # Scenario
 
-Progetta e implementa una soluzione a **microservizi** per la gestione di un flusso di Fatturazione Elettronica, 
-in cui più servizi collaborano per ricevere, validare, firmare e inviare una fattura.  
+Progetta e implementa una soluzione a **microservizi** per la gestione di un flusso di Fatturazione Elettronica.
+Riferimento al documento dei requisiti: [prova-tecnica.md](prova-tecnica.md)
+
 
 ## Architettura:
 
@@ -40,37 +41,37 @@ Il servizio di ricezione ha 3 endpoint:
 
 salvaFatturaInterna ->
 
-    Necessita dei seguenti dati in ingresso: invoiceDto (contiene anche customerId e callback per la risposta)
-    Avvia un virtual thread che, per ogni fattura in ingresso:
-    Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
-    Mette fattura in stato INTERNAL_INVOICE_NEW
-    Invia a kafka su topic incomingInvoice
-    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
-    Ha un timeout oltre il quale manda la fattura in dlt
-    Invia la risposta chiamando la callback
-    Ha un timeout oltre il quale manda la fattura in dlt
+    * Necessita dei seguenti dati in ingresso: invoiceDto (contiene anche customerId e callback per la risposta)
+    * Avvia un virtual thread che, per ogni fattura in ingresso:
+    * Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
+    * Mette fattura in stato INTERNAL_INVOICE_NEW
+    * Invia a kafka su topic incomingInvoice
+    * Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
+    * Ha un timeout oltre il quale manda la fattura in dlt
+    * Invia la risposta chiamando la callback
+    * Ha un timeout oltre il quale manda la fattura in dlt
 
 salvaFatturaEsterna ->
 
-    Necessita dei seguenti dati in ingresso: invoiceDto (contiene anche customerId e callback per la risposta)
-    Avvia un virtual thread che, per ogni fattura in ingresso:
-    Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
-    Mette fattura in stato EXTERNAL_INVOICE
-    Invia a kafka su topic incomingInvoice
-    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
-    Invia la risposta chiamando la callback
-    Ha un timeout oltre il quale manda la fattura in dlt
+    * Necessita dei seguenti dati in ingresso: invoiceDto (contiene anche customerId e callback per la risposta)
+    * Avvia un virtual thread che, per ogni fattura in ingresso:
+    * Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
+    * Mette fattura in stato EXTERNAL_INVOICE
+    * Invia a kafka su topic incomingInvoice
+    * Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
+    * Invia la risposta chiamando la callback
+    * Ha un timeout oltre il quale manda la fattura in dlt
 
 notificaSdI ->
 
-    Necessita dei seguenti dati in ingresso: customerId, invoiceNumber, stato
-    Avvia un virtual thread che, per ogni notifica in ingresso:
-    Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
-    Mette fattura in stato INTERNAL_INVOICE_DELIVERED, INTERNAL_INVOICE_DISCARDED o INTERNAL_INVOICE_NOT_DELIVERED
-    Invia a kafka su topic dsiNotification
-    Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
-    Invia la risposta chiamando la callback se esiste.
-    Ha un timeout oltre il quale manda il dato in dlt
+    * Necessita dei seguenti dati in ingresso: customerId, invoiceNumber, stato
+    * Avvia un virtual thread che, per ogni notifica in ingresso:
+    * Salva su cache locale customerId, invoiceNumber e riferimento a thread virtuale.  
+    * Mette fattura in stato INTERNAL_INVOICE_DELIVERED, INTERNAL_INVOICE_DISCARDED o INTERNAL_INVOICE_NOT_DELIVERED
+    * Invia a kafka su topic dsiNotification
+    * Viene risvegliato da receiver kafka quando la corrispondente fattura arriva su savedInvoice
+    * Invia la risposta chiamando la callback se esiste.
+    * Ha un timeout oltre il quale manda il dato in dlt
 
 ### DBMANAGER SERVER
 Dedicato allo storage delle fatture e dei clienti.
@@ -89,21 +90,20 @@ Se non riesce a comunicare su sistemi esterni dopo un certo numero di tentativi,
 #### FLUSSO di lavoro
 Il DbManager riceve su incomingInvoice e su dsiNotification:
 
-    Riceve su incomingInvoice
-    Avvia un thread per ogni fattura in ingresso
-    Verifica se customerId esiste 
-    Se si salva la fattura e scrive su savedInvoice e su outgoingInvoice con stato INTERNAL_INVOICE_TOBE_SENT
-        Attende una risposta su sentInvoice per aggiornare lo stato a INTERNAL_INVOICE_SENT o INTERNAL_INVOICE_NOT_SENT 
-    Se no salva la fattura e scrive su savedInvoice con stato INTERNAL_INVOICE_INVALID
-    Il thread ha un timeout per mandare in DLT la fattura se non riesce a comunicare con qualche sistema esterno
+    * Riceve su incomingInvoice
+    * Avvia un thread per ogni fattura in ingresso
+    * Verifica se customerId esiste 
+    * Se si salva la fattura e scrive su savedInvoice e su outgoingInvoice con stato INTERNAL_INVOICE_TOBE_SENT
+        ** Attende una risposta su sentInvoice per aggiornare lo stato a INTERNAL_INVOICE_SENT o INTERNAL_INVOICE_NOT_SENT 
+    * Se no salva la fattura e scrive su savedInvoice con stato INTERNAL_INVOICE_INVALID
+    * Il thread ha un timeout per mandare in DLT la fattura se non riesce a comunicare con qualche sistema esterno
 
-    Riceve su dsiNotification
-    Avvia un thread per ogni fattura in ingresso
-    Verifica se customerId e invoiceNumber esistono
-    Se si carica cambia lo stato della fattura in INTERNAL_INVOICE_DELIVERED, INTERNAL_INVOICE_DISCARDED o INTERNAL_INVOICE_NOT_DELIVERED 
-    e scrive su savedInvoice  
-    Se no scrive su savedInvoice con stato INTERNAL_INVOICE_INVALID 
-    Il thread ha un timeout per mandare in DLT la notifica ricevuta se non riesce a comunicare con qualche sistema esterno
+    * Riceve su dsiNotification
+    * Avvia un thread per ogni fattura in ingresso
+    * Verifica se customerId e invoiceNumber esistono
+    * Se si carica cambia lo stato della fattura in INTERNAL_INVOICE_DELIVERED, INTERNAL_INVOICE_DISCARDED o INTERNAL_INVOICE_NOT_DELIVERED e scrive su savedInvoice  
+    * Se no scrive su savedInvoice con stato INTERNAL_INVOICE_INVALID 
+    * Il thread ha un timeout per mandare in DLT la notifica ricevuta se non riesce a comunicare con qualche sistema esterno
 
 
 ### SENDER SERVER
@@ -156,18 +156,27 @@ mvn compile jib:dockerBuild
 mvn jib:build
 
 #### sevizi a supporto
-docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy --build -d --force-recreate
+docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog --build -d --force-recreate
+
+docker compose down kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog
+
 #### microservizi
 docker compose up eurekaserver dbmanager receiver sender gatewayserver  --build -d --force-recreate
 
 docker compose down eurekaserver dbmanager receiver sender gatewayserver
 
-#### Avvio mail server per test
-docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
+#### Accesso a mail server client
 http://localhost:8025/ per visualizzare le spedizioni effettuate
 
 #### Accesso alla documentazione swagger
 http://localhost:9020/swagger-ui/ o più in generale http://localhost:XXXX/swagger-ui/
+Porte dei microservizi:
+eurekaserver: 8761
+receiver: 8080
+dbmanager: 9020
+sender: 9010
+scheduler: 9030
+gatewayserver: 8072
 
 #### Kafka-ui
 http://localhost:9094/
