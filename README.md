@@ -6,7 +6,7 @@ Riferimento al documento dei requisiti: [prova-tecnica.md](prova-tecnica.md)
 
 ## Architettura:
 
-![Architettura sistema](.\Architettura.png)
+![Architettura sistema](./Architettura.png)
 
 ## Sequence Diagram
 
@@ -14,18 +14,18 @@ Riferimento al documento dei requisiti: [prova-tecnica.md](prova-tecnica.md)
 Si suppone l'utente sia loggato e abbia compilato la fattura attraverso un'interfaccia apposita.
 L'utente è presente nel sistema.
 
-![Sequence diagram](.\Sequence.png)
+![Sequence diagram](./Sequence.png)
 
 ### Inserimento fattura esterna
 Si suppone il sistema che invia la fattura per il cliente aruba
 conosca il customer_id dell'utente
 
-![Sequence diagram 1](.\Sequence-1.png)
+![Sequence diagram 1](./Sequence-1.png)
 
 ### SdI notifica il risultato della spedizione della fattura
 Si suppone venga mandato customer id, invoice number e stato
 
-![Sequence diagram 2](.\Sequence-2.png)
+![Sequence diagram 2](./Sequence-2.png)
 
 ### RECEIVER SERVER
 Riceve fatture nuove e accende un thread virtuale per la gestione.
