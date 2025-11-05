@@ -128,11 +128,29 @@ Per il discovery dei servizi
 
 ### GATEWAY SERVER
 Punto di autenticazione/autorizzazione e ingresso dall'esterno
+    Ho simulato l'uso di un token da sostituire con integrazione a keycloak 
+    csrf disabilitato per via del token (il cross origin è bene controllarlo in caso si usino cookies per le sessioni)
+    Nel codice c'è il metodo per integrare keycloak.
 
-Qualsiasi microservizio ha il seguente meccanismo di gestione errori:
-Counter errori
-dopo tot numero di errori la fattura va in INVOICE_ERROR
 
+### Gestione resilienza
+    Qualsiasi microservizio ha il seguente meccanismo di gestione errori:
+        Solo il gateway ha un fallback controller per richieste che vanno in timeout
+        Rate limiter pe evitare che con una singola sessione si possa evitare denial of service
+        CircuitBreaker per la gestione di problemi di connessione ad altri servizi
+        Retry con backoff (resilience4j)
+        Rate limiter su operazioni onerose (configurato ma non usato nella  prova)
+        Per quanto riguarda le iterazioni su kafka si usa un retry con backoff prima di mandare in una DLT il dato.
+        Kafka è stato configurato affinchè i microservizi si riallineino quando tornato attivi, andando a consumare quanto non gestito
+        E' stato usato inoltre il SAGA pattern coreografato
+### Gestione scalabilità
+    E' stato usato eureka per la registrazione delle istanze di microservizio 
+    e un gateway per load balancing. 
+    I servizi sono dockerizzati, mancano solo i file kubernetis 
+    per il dimensionamento dei POD e per la quantità di istanze minime e massime.
+
+
+    
 ---
 ## Comandi utili
 
@@ -189,6 +207,7 @@ che trova nel tuo progetto in src/test/scala.
 
 Se vuoi eseguire una simulazione specifica, puoi usare l'opzione 
 
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadExternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadExternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadInternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadSdiNotificationsTest1"

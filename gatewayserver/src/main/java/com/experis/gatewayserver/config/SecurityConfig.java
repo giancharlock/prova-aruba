@@ -39,6 +39,11 @@ public class SecurityConfig {
             .addFilterAt(apiKeyAuthenticationFilter(sdiToken, arubaToken), SecurityWebFiltersOrder.AUTHENTICATION)
             .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
+        /** keycloak
+         * http.oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec
+         *                         .jwt(jwtSpec -> jwtSpec.jwtAuthenticationConverter(grantedAuthoritiesExtractor())));
+         */
+
         return http.build();
     }
 
@@ -66,4 +71,6 @@ public class SecurityConfig {
             return exchange.getResponse().setComplete();
         };
     }
+
+
 }

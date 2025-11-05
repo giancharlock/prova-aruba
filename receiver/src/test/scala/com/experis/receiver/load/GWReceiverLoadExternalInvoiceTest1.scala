@@ -10,11 +10,11 @@ class GWReceiverLoadExternalInvoiceTest1 extends Simulation {
 
   // Configurazione del protocollo HTTP
   val httpProtocol = http
-    .baseUrl("http://localhost:8080") // URL base del servizio receiver
+    .baseUrl("http://localhost:8072") // URL base del servizio receiver
     .acceptHeader("application/json")
     .contentTypeHeader("application/json")
 
-  val arubaToken = "ARUBA_TOKEN_VALUE"
+  val arubaToken = "aruba-secret-token"
 
   // Generatore di dati dinamici (Feeder)
   val invoiceFeeder = Iterator.continually {
