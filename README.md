@@ -207,7 +207,15 @@ che trova nel tuo progetto in src/test/scala.
 
 Se vuoi eseguire una simulazione specifica, puoi usare l'opzione 
 
+    * da docker
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadExternalInvoiceTest1"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadInternalInvoiceTest1"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadSdiNotificationsTest1"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadExternalInvoiceTest"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadInternalInvoiceTest"
+    mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadSdiNotificationsTest"
+    
+    * da local
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadExternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadInternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadSdiNotificationsTest1"

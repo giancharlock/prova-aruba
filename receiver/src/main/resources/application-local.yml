@@ -57,6 +57,16 @@ spring:
             retries: 3
             retry.backoff.ms: 1000
             delivery.timeout.ms: 120000
+        bindings:
+          savedInvoice-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: saved-invoice.DLT
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              use-native-decoding: true
+              back-off-max-interval: 10000
+              back-off-multiplier: 2.0
 
 eureka:
   instance:

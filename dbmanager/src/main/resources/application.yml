@@ -48,19 +48,25 @@ spring:
     stream:
       bindings:
         incomingInvoice-in-0:
-          group: ${spring.application.name}
-          content-type: application/json
-        sdiNotification-in-0:
-          group: ${spring.application.name}
-          content-type: application/json
-        sentInvoice-in-0:
+          destination: save-invoice
           group: ${spring.application.name}
           content-type: application/json
         publishSavedInvoice-out-0:
-          destination: savedInvoice-in-0
+          destination: invoice-saved
           content-type: application/json
         publishOutgoingInvoice-out-0:
-          destination: outgoingInvoice-in-0
+          destination: send-invoice
+          content-type: application/json
+        sentInvoice-in-0:
+          destination: invoice-sent
+          group: ${spring.application.name}
+          content-type: application/json
+        sdiNotification-in-0:
+          destination: update-invoice
+          group: ${spring.application.name}
+          content-type: application/json
+        publishSdiNotification-out-0:
+          destination: invoice-updated
           content-type: application/json
         business-dlt-out-0:
           destination: dbmanager.DLT
