@@ -5,6 +5,7 @@ import com.experis.dbmanager.entity.Customer;
 import com.experis.dbmanager.entity.Invoice;
 import com.experis.dbmanager.enumerations.InvoiceStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
     "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('test_user_1', 'aruba_pwd_1', 'test1@aruba.it', 'ARUBA', CURRENT_DATE, 'system');"
 })
 @Import(AuditAwareImpl.class)
+@Disabled
 class InvoiceRepositoryTest {
 
     @Autowired

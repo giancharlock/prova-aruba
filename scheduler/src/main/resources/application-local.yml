@@ -73,19 +73,21 @@ app:
 
     # Configurazione dei Job (cron o fixedRate)
     dlt-job:
-      # Esegui ogni 5 minuti
-      cron: "0 */1 * * * ?"
+      # Esegui ogni 3 minuti
+      cron: "0 */3 * * * ?"
       # Topic DLT da monitorare (elenco)
       topics:
         - "incoming-invoice.DLT"
         - "sdi-notification.DLT"
         - "sent-invoice.DLT"
-        - "business.DLT"
+        - "dbmanager.DLT"
         - "saved-invoice.DLT"
+        - "receiver.DLT"
         - "outgoing-invoice.DLT"
+        - "sender.DLT"
       # Timeout per il poll() di Kafka in millisecondi
       poll-timeout: 10000
 
     invoice-report-job:
-      # Esegui ogni 15 minuti
-      cron: "0 */1 * * * ?"
+      # Esegui ogni 2 minuti
+      cron: "0 */2 * * * ?"

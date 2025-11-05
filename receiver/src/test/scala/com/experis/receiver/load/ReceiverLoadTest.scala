@@ -19,6 +19,7 @@ class ReceiverLoadTest extends Simulation {
     val customerId = 2 + Random.nextInt(3) // Genera un ID cliente casuale tra 2, 3, e 4, quelli inseriti nel db
     val test_user = "test_user_" + customerId-1;
     val callbackUrl = s"http://mock-callback-server.com/notify/$customerId/$invoiceNumber"
+    val fatturaRandom = test_user + " " + invoiceNumber + Random.nextInt(9999999999);
 
     // Creiamo il payload JSON direttamente qui
     val jsonPayload = s"""

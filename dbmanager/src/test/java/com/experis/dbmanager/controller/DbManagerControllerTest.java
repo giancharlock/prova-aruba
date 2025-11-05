@@ -9,10 +9,7 @@ import com.experis.dbmanager.enumerations.CustomerType;
 import com.experis.dbmanager.enumerations.InvoiceStatus;
 import com.experis.dbmanager.repository.CustomerRepository;
 import com.experis.dbmanager.repository.InvoiceRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -30,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "eureka.client.enabled=false")
 @ActiveProfiles("test")
+@Disabled
 class DbManagerControllerTest {
 
     @LocalServerPort

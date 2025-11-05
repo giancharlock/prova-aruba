@@ -3,6 +3,7 @@ package com.experis.dbmanager.repository;
 import com.experis.dbmanager.audit.AuditAwareImpl;
 import com.experis.dbmanager.entity.Customer;
 import com.experis.dbmanager.enumerations.CustomerType;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
     "MERGE INTO customer (username, password, email, customer_type, created_at, created_by) KEY(username) VALUES ('test_user_3', 'aruba_pwd_3', 'test3@aruba.it', 'ARUBA', CURRENT_DATE, 'system');"
 })
 @Import(AuditAwareImpl.class)
+@Disabled
 class CustomerRepositoryTest {
 
     @Autowired

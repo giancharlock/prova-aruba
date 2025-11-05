@@ -45,11 +45,11 @@ spring:
           destination: invoice-sent
           content-type: application/json
         business-dlt-out-0:
-          destination: business.DLT
+          destination: sender.DLT
           content-type: application/json
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers: kafka:9092
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000

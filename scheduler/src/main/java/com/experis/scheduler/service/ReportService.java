@@ -22,7 +22,7 @@ public class ReportService {
      * @param filePath Path del file di output (da application.yml)
      * @param data Lista di DTO da scrivere
      */
-    public <T> void writeReport(String filePath, List<T> data, Class<T> type) {
+    public <T> void writeReport(String filePath, List<T> data) {
         if (data == null || data.isEmpty()) {
             log.info("Nessun dato da scrivere per il report: {}", filePath);
             return;

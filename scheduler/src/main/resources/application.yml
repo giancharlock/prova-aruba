@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: "scheduler"
-  profiles:
-    active: "prod"
 
   # Configurazione Kafka per il DLT Consumer (Job 1)
   kafka:
@@ -15,9 +13,6 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-    producer:
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
 
 management:
   endpoints:
@@ -70,24 +65,29 @@ logging:
 app:
   scheduler:
     # URL per interrogare il microservizio dbmanager (Job 2)
-    dbmanager-url: "http://dbmanager/api" # Assumo 'dbmanager' sia il nome servizio in Eureka
+    dbmanager-url: "http://dbmanager:9020/api"
 
     # Percorsi dei file CSV di output (configurabili come da README)
-    dlt-report-path: "/reports/dlt_report.csv"
-    invoice-report-path: "/reports/invoice_status_report.csv"
+    dlt-report-path: "~/prova-aruba/scheduler/reports/dlt_report.csv"
+    invoice-report-path: "~/prova-aruba/scheduler/reports/invoice_status_report.csv"
 
     # Configurazione dei Job (cron o fixedRate)
     dlt-job:
-      # Esegui ogni 5 minuti
-      cron: "0 */5 * * * ?"
+      # Esegui ogni 3 minuti
+      cron: "0 */3 * * * ?"
       # Topic DLT da monitorare (elenco)
       topics:
         - "incoming-invoice.DLT"
         - "sdi-notification.DLT"
         - "sent-invoice.DLT"
+        - "dbmanager.DLT"
+        - "saved-invoice.DLT"
+        - "receiver.DLT"
+        - "outgoing-invoice.DLT"
+        - "sender.DLT"
       # Timeout per il poll() di Kafka in millisecondi
       poll-timeout: 10000
 
     invoice-report-job:
-      # Esegui ogni 15 minuti
-      cron: "0 */15 * * * ?"
+      # Esegui ogni 2 minuti
+      cron: "0 */2 * * * ?"

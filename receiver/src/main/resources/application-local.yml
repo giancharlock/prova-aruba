@@ -67,8 +67,6 @@ spring:
               use-native-decoding: true
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
-              configuration:
-                spring.json.value.default.type: com.experis.dbmanager.dto.InvoiceDto
 
 eureka:
   instance:

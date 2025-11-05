@@ -72,7 +72,7 @@ public class ScheduledJobs {
                 dltMessages.add(mapRecordToDltDto(record));
             }
 
-            reportService.writeReport(properties.getDltReportPath(), dltMessages, DltMessageDto.class);
+            reportService.writeReport(properties.getDltReportPath(), dltMessages);
 
             dltConsumer.commitSync();
 
@@ -97,7 +97,7 @@ public class ScheduledJobs {
                 return;
             }
 
-            reportService.writeReport(properties.getInvoiceReportPath(), invoices, InvoiceReportDto.class);
+            reportService.writeReport(properties.getInvoiceReportPath(), invoices);
 
         } catch (Exception e) {
             log.error("Errore durante il Job 2 (Report Fatture)", e);

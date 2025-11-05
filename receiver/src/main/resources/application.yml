@@ -3,7 +3,7 @@ server:
 
 app:
   callback:
-    timeout-ms: 30000 # Timeout per la produzione
+    timeout-ms: 30000
 
 spring:
   threads:
@@ -12,31 +12,47 @@ spring:
   application:
     name: "receiver"
 
-  # --- Spring Kafka Producer Configuration (for KafkaTemplate) ---
   kafka:
+    consumer:
+      group-id: "receiver-dlt-consumer"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
 
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
-    stream:
       function:
-        definition: savedInvoice
+      definition: savedInvoice;updatedInvoice
+    stream:
       bindings:
         publishInvoice-out-0:
-          destination: incomingInvoice-in-0
+          destination: save-invoice
+          content-type: application/json
         publishSdiNotification-out-0:
-          destination: sdiNotification-in-0
+          destination: update-invoice
+          content-type: application/json
         savedInvoice-in-0:
-          destination: savedInvoice-in-0
+          destination: invoice-saved
           group: ${spring.application.name}
+          content-type: application/json
+        updatedInvoice-in-0:
+          destination: invoice-updated
+          group: ${spring.application.name}
+          content-type: application/json
         business-dlt-out-0:
           destination: receiver.DLT
+          content-type: application/json
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers:
+            - kafka:9092
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
@@ -48,8 +64,7 @@ spring:
               dlqName: saved-invoice.DLT
               max-attempts: 3
               back-off-initial-interval: 1000
-              use-native-decoding: false
-              header-mode: true
+              use-native-decoding: true
               back-off-max-interval: 10000
               back-off-multiplier: 2.0
 
@@ -93,9 +108,9 @@ info:
 
 logging:
   level:
-    com:
-      experis:
-        receiver: DEBUG
+    com.experis.receiver: DEBUG
+    org.springframework.cloud.stream: INFO
+    org.springframework.kafka: INFO
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
