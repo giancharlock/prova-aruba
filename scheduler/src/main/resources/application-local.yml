@@ -7,7 +7,8 @@ spring:
 
   # Configurazione Kafka per il DLT Consumer (Job 1)
   kafka:
-    bootstrap-servers: localhost:9096
+    bootstrap-servers:
+      - localhost:9096
     consumer:
       group-id: "scheduler-dlt-consumer"
       auto-offset-reset: earliest

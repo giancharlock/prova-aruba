@@ -17,7 +17,8 @@ spring:
       mail.debug: true
 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers:
+      - kafka:9092
     consumer:
       group-id: "sender-dlt-consumer"
       auto-offset-reset: earliest
@@ -49,7 +50,8 @@ spring:
           content-type: application/json
       kafka:
         binder:
-          brokers: kafka:9092
+          brokers:
+            - kafka:9092
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000

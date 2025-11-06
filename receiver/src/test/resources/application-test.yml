@@ -11,11 +11,11 @@ spring:
         definition: savedInvoice
       bindings:
         publishInvoice-out-0:
-          destination: incomingInvoice
+          destination: incoming-invoice
         publishSdiNotification-out-0:
           destination: dsiNotification
         savedInvoice-in-0:
-          destination: savedInvoice
+          destination: saved-invoice
           group: ${spring.application.name}
         business-dlt-out-0:
           destination: business.DLT

@@ -27,7 +27,8 @@ spring:
     - postgres
 
   kafka:
-    bootstrap-servers: kafka:9096
+    bootstrap-servers:
+      - kafka:9092
     consumer:
       group-id: "dbmanager-dlt-consumer"
       auto-offset-reset: earliest
@@ -37,7 +38,7 @@ spring:
         spring.json.trusted.packages: "*"
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
 
   cloud:
     openfeign:

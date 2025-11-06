@@ -27,7 +27,8 @@ spring:
     - postgres
 
   kafka:
-    bootstrap-servers: localhost:9096
+    bootstrap-servers:
+      - localhost:9096
     consumer:
       group-id: "dbmanager-dlt-consumer"
       auto-offset-reset: earliest

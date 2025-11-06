@@ -169,6 +169,7 @@ services:
       - "3000:3000"
     volumes:
       - ../observability/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - D:/grafana-data:/var/lib/grafana
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
       interval: 10s
@@ -397,6 +398,8 @@ services:
 
 volumes:
   kafka_data:
+    driver: local
+  grafana-data:
     driver: local
 
 networks:

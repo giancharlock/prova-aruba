@@ -13,6 +13,8 @@ spring:
     name: "receiver"
 
   kafka:
+    bootstrap-servers:
+      - kafka:9092
     consumer:
       group-id: "receiver-dlt-consumer"
       auto-offset-reset: earliest
