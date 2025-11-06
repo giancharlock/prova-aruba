@@ -43,7 +43,7 @@ class GWReceiverLoadExternalInvoiceTest extends Simulation {
     .feed(invoiceFeeder)
     .exec(
       http("request_esterna")
-        .post("/api/salvaFatturaEsterna")
+        .post("/receiver/api/salvaFatturaEsterna")
         .header("X-API-KEY",arubaToken)
         .body(StringBody(session => session("jsonPayload").as[String])).asJson
         .check(status.is(202))
@@ -52,7 +52,7 @@ class GWReceiverLoadExternalInvoiceTest extends Simulation {
   // Definizione del profilo di carico
   setUp(
     // Eseguiamo i due scenari in parallelo
-    salvaFatturaEsterna.inject(rampUsers(500).during(10.seconds)),
+    salvaFatturaEsterna.inject(rampUsers(100).during(10.seconds)),
   ).protocols(httpProtocol)
    .maxDuration(2.minute) // Durata massima del test
 

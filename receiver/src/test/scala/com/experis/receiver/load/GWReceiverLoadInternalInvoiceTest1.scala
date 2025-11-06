@@ -44,7 +44,7 @@ class GWReceiverLoadInternalInvoiceTest1 extends Simulation {
     .feed(invoiceFeeder)
     .exec(
       http("request_interna")
-        .post("/api/salvaFatturaInterna")
+        .post("/receiver/api/salvaFatturaInterna")
         .header("X-API-KEY",arubaToken)
         .body(StringBody(session => session("jsonPayload").as[String])).asJson
         .check(status.is(202)) // Ci aspettiamo che la richiesta venga accettata

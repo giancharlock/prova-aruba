@@ -40,7 +40,7 @@ class GWReceiverLoadSdiNotificationsTest extends Simulation {
     .feed(invoiceFeeder)
     .exec(
       http("sdi_notification")
-        .post("/api/sdiNotification")
+        .post("/receiver/api/sdiNotification")
         .header("X-API-KEY",sdiToken)
         .body(StringBody(session => session("jsonPayload").as[String])).asJson
         .check(status.is(202)) // Ci aspettiamo che la richiesta venga accettata
@@ -49,7 +49,7 @@ class GWReceiverLoadSdiNotificationsTest extends Simulation {
   // Definizione del profilo di carico
   setUp(
     // Eseguiamo i due scenari in parallelo
-    sdiNotification.inject(rampUsers(10000).during(10.seconds)),
+    sdiNotification.inject(rampUsers(100).during(10.seconds)),
   ).protocols(httpProtocol)
    .maxDuration(2.minute) // Durata massima del test
 

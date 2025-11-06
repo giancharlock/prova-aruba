@@ -21,8 +21,8 @@ spring:
         - name: RequestRateLimiter
           args:
             redis-rate-limiter:
-              replenishRate: 100
-              burstCapacity: 200
+              replenishRate: 10000
+              burstCapacity: 20000
               requestedTokens: 1
             key-resolver: "#{@ipKeyResolver}"
       discovery:

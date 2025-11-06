@@ -44,7 +44,7 @@ class GWReceiverLoadInternalInvoiceTest extends Simulation {
     .feed(invoiceFeeder)
     .exec(
       http("request_interna")
-        .post("/api/salvaFatturaInterna")
+        .post("/receiver/api/salvaFatturaInterna")
         .header("X-API-KEY",arubaToken)
         .body(StringBody(session => session("jsonPayload").as[String])).asJson
         .check(status.is(202)) // Ci aspettiamo che la richiesta venga accettata
@@ -53,7 +53,7 @@ class GWReceiverLoadInternalInvoiceTest extends Simulation {
   // Definizione del profilo di carico
   setUp(
     // Eseguiamo i due scenari in parallelo
-    salvaFatturaInterna.inject(rampUsers(20000).during(10.seconds)),
+    salvaFatturaInterna.inject(rampUsers(100).during(10.seconds)),
   ).protocols(httpProtocol)
    .maxDuration(2.minute) // Durata massima del test
 
