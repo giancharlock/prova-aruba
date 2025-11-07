@@ -15,9 +15,3 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
-
-  microservice-eureka-config:
-    extends:
-      service: microservice-base-config
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/

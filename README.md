@@ -173,10 +173,20 @@ mvn compile jib:dockerBuild
 #### Invio a repository docker
 mvn jib:build
 
-#### sevizi a supporto
-docker compose up kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog redis --build -d --force-recreate
+### SVILUPPO con servizi a supporto su docker e microservizi in locale 
+Entrare nel folder docker-compose/default e lanciare:
+docker compose up --build -d --force-recreate
+verranno lanciati: kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog redis
 
-docker compose down kafka kafka-ui postgres gateway backend grafana tempo prometheus minio alloy mailhog redis
+Per fermare tutto:
+docker compose down
+
+### SVILUPPO con servizi a supporto su docker e microservizi in docker
+Entrare nel folder docker-compose/docker e lanciare:
+docker compose up --build -d --force-recreate
+
+Per fermare tutto:
+docker compose down
 
 #### microservizi
 docker compose up eurekaserver dbmanager receiver sender gatewayserver  --build -d --force-recreate
