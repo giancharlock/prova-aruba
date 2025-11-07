@@ -9,7 +9,7 @@ spring:
     name: "sender"
 
   mail:
-    host: localhost
+    host: mailhog
     port: 1025 # Porta standard per mail server locali come MailHog o GreenMail
     properties:
       mail.smtp.auth: false
