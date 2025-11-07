@@ -22,7 +22,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
   depends_on:
     - postgres
 
@@ -76,6 +76,8 @@ spring:
         binder:
           brokers:
             - localhost:9096
+          metrics:
+            enabled: false
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
@@ -152,11 +154,11 @@ info:
 
 logging:
   level:
-    com.experis.dbmanager: DEBUG
+    com.experis.dbmanager: INFO
     org.springframework.cloud.stream: INFO
     org.springframework.kafka: INFO
   pattern:
-    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}] [%t]"
 
 resilience4j.circuitbreaker:
   configs:

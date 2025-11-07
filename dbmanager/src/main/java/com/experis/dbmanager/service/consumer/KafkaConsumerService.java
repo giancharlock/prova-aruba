@@ -87,7 +87,7 @@ public class KafkaConsumerService {
 
         dbManagerService.findInvoiceByNumber(sentInvoice.getInvoiceNumber()).ifPresentOrElse(invoice -> {
             log.info("Found invoice {}. Updating status to {}", invoice.getInvoiceNumber(), sentInvoice.getInvoiceStatus());
-            invoice.setInvoiceStatus(InvoiceStatus.INTERNAL_INVOICE_SENT);
+            invoice.setInvoiceStatus(sentInvoice.getInvoiceStatus());
             dbManagerService.updateInvoice(invoice.getInvoiceNumber(), invoice);
         }, () -> {
             log.error("Invoice {} not found for SENT confirmation. This may indicate a data consistency issue.", sentInvoice.getInvoiceNumber());

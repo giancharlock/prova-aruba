@@ -44,8 +44,8 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
-      function:
-        definition: incomingInvoice;sdiNotification;sentInvoice
+    function:
+      definition: incomingInvoice;sdiNotification;sentInvoice
     stream:
       bindings:
         incomingInvoice-in-0:
@@ -152,9 +152,9 @@ info:
 
 logging:
   level:
-    com.experis.dbmanager: ERROR
-    org.springframework.cloud.stream: ERROR
-    org.springframework.kafka: ERROR
+    com.experis.dbmanager: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.springframework.kafka: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]" 
 

@@ -49,7 +49,7 @@ class ReceiverLoadInternalInvoiceTest extends Simulation {
   // Definizione del profilo di carico
   setUp(
     // Eseguiamo i due scenari in parallelo
-    salvaFatturaInterna.inject(rampUsers(100).during(10.seconds)),
+    salvaFatturaInterna.inject(rampUsers(1000).during(10.seconds)),
   ).protocols(httpProtocol)
    .maxDuration(2.minute) // Durata massima del test
 
