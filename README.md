@@ -209,6 +209,9 @@ gatewayserver: 8072
 #### Kafka-ui
 http://localhost:9094/
 
+### Grafana
+http://localhost:3000/
+
 ### Test con gatling
 Questo comando compilerà ed eseguirà tutte le simulazioni Gatling
 che trova nel tuo progetto in src/test/scala.
@@ -217,7 +220,7 @@ che trova nel tuo progetto in src/test/scala.
 
 Se vuoi eseguire una simulazione specifica, puoi usare l'opzione 
 
-    * da docker
+    * tutto su docker
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadExternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadInternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadSdiNotificationsTest1"
@@ -225,7 +228,7 @@ Se vuoi eseguire una simulazione specifica, puoi usare l'opzione
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadInternalInvoiceTest"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.GWReceiverLoadSdiNotificationsTest"
     
-    * da local
+    * microservizi in locale
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadExternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadInternalInvoiceTest1"
     mvn gatling:test -D"gatling.simulationClass=com.experis.receiver.load.ReceiverLoadSdiNotificationsTest1"
