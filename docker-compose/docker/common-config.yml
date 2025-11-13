@@ -21,3 +21,4 @@ services:
       service: microservice-base-config
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      CONFIG_SERVER_URL: http://configserver:8888

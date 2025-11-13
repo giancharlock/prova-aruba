@@ -1,0 +1,27 @@
+# Contenuto di dbmanager-local.yml nel repository del Config Server
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/invoice
+    username: invoice_user
+    password: invoice_pwd
+  jpa:
+    show-sql: false
+  kafka:
+    bootstrap-servers: localhost:9096
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9096
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    com.experis.dbmanager: DEBUG
+    org.springframework.cloud.stream: INFO
+    org.springframework.kafka: INFO

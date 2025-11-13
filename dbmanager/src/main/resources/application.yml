@@ -8,10 +8,11 @@ spring:
   application:
     name: "dbmanager"
   datasource:
-    url: jdbc:postgresql://postgres:5432/invoice
+    # Placeholder che corrisponde alla chiave della proprietà. Il valore verrà dal Config Server.
+    url: ${spring.datasource.url:jdbc:postgresql://postgres:5432/invoice}
     driverClassName: org.postgresql.Driver
-    username: invoice_user
-    password: invoice_pwd
+    username: ${spring.datasource.username:invoice_user}
+    password: ${spring.datasource.password:invoice_pwd}
   jpa:
     properties:
       hibernate:
@@ -22,13 +23,14 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    # Anche qui, il valore verrà dal Config Server.
+    show-sql: ${spring.jpa.show-sql:true}
   depends_on:
     - postgres
 
   kafka:
-    bootstrap-servers:
-      - kafka:9092
+    # Placeholder per i server Kafka.
+    bootstrap-servers: ${spring.kafka.bootstrap-servers:kafka:9092}
     consumer:
       group-id: "dbmanager-dlt-consumer"
       auto-offset-reset: earliest
@@ -74,8 +76,8 @@ spring:
           content-type: application/json
       kafka:
         binder:
-          brokers:
-            - kafka:9092
+          # Anche il binder di Kafka deve essere configurato.
+          brokers: ${spring.cloud.stream.kafka.binder.brokers:kafka:9092}
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
@@ -116,7 +118,8 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://eurekaserver:8761/eureka/
+      # Placeholder per l'URL di Eureka.
+      defaultZone: ${eureka.client.serviceUrl.defaultZone:http://eurekaserver:8761/eureka/}
 
 management:
   endpoints:
@@ -150,11 +153,12 @@ info:
     description: "Invoice App DbManager Application"
     version: "1.0.0"
 
+# I livelli di logging verranno sovrascritti da quelli del Config Server.
 logging:
   level:
-    com.experis.dbmanager: DEBUG
-    org.springframework.cloud.stream: DEBUG
-    org.springframework.kafka: DEBUG
+    com.experis.dbmanager: ${logging.level.com.experis.dbmanager:DEBUG}
+    org.springframework.cloud.stream: ${logging.level.org.springframework.cloud.stream:DEBUG}
+    org.springframework.kafka: ${logging.level.org.springframework.kafka:DEBUG}
   pattern:
     level: "%5p [${spring.application.name},%X{correlationId:-},%X{trace_id},%X{span_id}]  [%t]"
 
