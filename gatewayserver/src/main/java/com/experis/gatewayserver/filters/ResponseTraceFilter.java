@@ -1,5 +1,6 @@
 package com.experis.gatewayserver.filters;
 
+import com.experis.dbmanager.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,9 @@ public class ResponseTraceFilter {
                 HttpHeaders requestHeaders = exchange.getRequest().getHeaders();
                 String correlationId = filterUtility.getCorrelationId(requestHeaders);
 
-                if(!(exchange.getResponse().getHeaders().containsKey(filterUtility.CORRELATION_ID))) {
+                if(!(exchange.getResponse().getHeaders().containsKey(Constants.CORRELATION_ID_HEADER))) {
                     logger.debug("Updated the correlation id to the outbound headers: {}", correlationId);
-                    exchange.getResponse().getHeaders().add(filterUtility.CORRELATION_ID, correlationId);
+                    exchange.getResponse().getHeaders().add(Constants.CORRELATION_ID_HEADER, correlationId);
                 }
 
             }));

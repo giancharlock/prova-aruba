@@ -1,0 +1,230 @@
+{
+	"info": {
+		"_postman_id": "cf2d2656-c41b-4ed7-9693-6509ea72e6aa",
+		"name": "AAA_PROVA-AUBA",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7997585"
+	},
+	"item": [
+		{
+			"name": "DB-MANAGER",
+			"item": [
+				{
+					"name": "findAllCustomers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9020/api/customers?page=0&size=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9020",
+							"path": [
+								"api",
+								"customers"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "4"
+								},
+								{
+									"key": "sort",
+									"value": "%5B%22sorted%22%5D",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GW findAllCustomers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "aruba-secret-token",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8072/dbmanager/api/customers?page=0&size=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8072",
+							"path": [
+								"dbmanager",
+								"api",
+								"customers"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "4"
+								},
+								{
+									"key": "sort",
+									"value": "%5B%22sorted%22%5D",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "salvaFatturaInterna",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "ROLE_ARUBA",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"invoice\": \"<?xml version='1.0' encoding='UTF-8'?><fattura>Mia fattura 2</fattura>\",\r\n  \"customer\": {\r\n    \"customerId\": 2,\r\n    \"username\": \"test_user_1\",\r\n    \"customerType\": \"ARUBA\"\r\n  },\r\n  \"callback\": \"http://my-service.com/callback\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/salvaFatturaInterna",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"salvaFatturaInterna"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GW salvaFatturaInterna",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "aruba-secret-token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"invoice\": \"<?xml version='1.0' encoding='UTF-8'?><fattura>Mia fattura 2</fattura>\",\r\n  \"customer\": {\r\n    \"customerId\": 2,\r\n    \"username\": \"test_user_2\",\r\n    \"customerType\": \"ARUBA\"\r\n  },\r\n  \"callback\": \"https://hkdk.events/z2b508t7ah2zkm\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8072/receiver/api/salvaFatturaInterna",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8072",
+					"path": [
+						"receiver",
+						"api",
+						"salvaFatturaInterna"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GW sdiNotification",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "sdi-secret-token",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"invoiceNumber\": 77444,\r\n  \"customerId\": 2,\r\n  \"status\": \"INTERNAL_INVOICE_DELIVERED\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8072/receiver/api/notificaSdI",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8072",
+					"path": [
+						"receiver",
+						"api",
+						"notificaSdI"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://template.postman-echo.com"
+		}
+	]
+}

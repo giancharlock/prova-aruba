@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerDto implements Serializable {
+public class CustomerDto extends BaseDto implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -21,9 +21,5 @@ public class CustomerDto implements Serializable {
     private String password;
     private String email;
     private String customerType;
-    private LocalDateTime createdAt;
-    private String createdBy;
-    private LocalDateTime updatedAt;
-    private String updatedBy;
 
 }

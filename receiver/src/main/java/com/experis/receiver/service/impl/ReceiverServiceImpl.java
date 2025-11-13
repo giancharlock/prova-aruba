@@ -1,5 +1,6 @@
 package com.experis.receiver.service.impl;
 
+import com.experis.dbmanager.constants.Constants;
 import com.experis.dbmanager.dto.InvoiceDto;
 import com.experis.dbmanager.dto.ResponseDto;
 import com.experis.dbmanager.dto.SdiNotificationDto;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,17 +36,17 @@ public class ReceiverServiceImpl implements IReceiverService {
 
     @Override
     public ResponseEntity<ResponseDto> saveInternalInvoice(InvoiceDto invoice) {
-        return processInvoice(invoice, InvoiceStatus.INTERNAL_INVOICE_NEW, "publishInvoice-out-0");
+        return processInvoice(invoice, InvoiceStatus.INTERNAL_INVOICE_NEW);
     }
 
     @Override
     public ResponseEntity<ResponseDto> saveExternalInvoice(InvoiceDto invoice) {
-        return processInvoice(invoice, InvoiceStatus.EXTERNAL_INVOICE, "publishInvoice-out-0");
+        return processInvoice(invoice, InvoiceStatus.EXTERNAL_INVOICE);
     }
 
     @Override
     public ResponseEntity<ResponseDto> handleSdiNotification(SdiNotificationDto notification) {
-        String cacheKey = buildCacheKey(notification.getCustomerId(), notification.getInvoiceNumber());
+        String cacheKey = buildCacheKey(notification.getCustomerId(), notification.getCorrelationId());
         log.info("Ricevuta notifica SdI per {}. In attesa di salvataggio DB.", cacheKey);
 
         // Creiamo il future per la gestione asincrona (timeout/callback)
@@ -76,7 +79,7 @@ public class ReceiverServiceImpl implements IReceiverService {
 
     @Override
     public void handleSavedInvoice(InvoiceDto savedInvoice) {
-        String cacheKey = buildCacheKey(savedInvoice.getCustomer().getCustomerId(), savedInvoice.getInvoiceNumber());
+        String cacheKey = buildCacheKey(savedInvoice.getCustomer().getCustomerId(), savedInvoice.getCorrelationId());
 
         CompletableFuture<ResponseEntity<ResponseDto>> future = asyncResponseCache.remove(cacheKey);
 
@@ -95,7 +98,11 @@ public class ReceiverServiceImpl implements IReceiverService {
         if (savedInvoice.getCallback() != null && !savedInvoice.getCallback().isBlank()) {
             try {
                 log.info("Esecuzione callback per {} a {}", cacheKey, savedInvoice.getCallback());
-                restTemplate.postForEntity(savedInvoice.getCallback(), savedInvoice, String.class);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("X-ARUBA-API-KEY","aruba4hookdeck-secret");
+                headers.set(Constants.CORRELATION_ID_HEADER, savedInvoice.getCorrelationId());
+                HttpEntity<Object> requestEntity = new HttpEntity<>(savedInvoice, headers);
+                restTemplate.postForEntity(savedInvoice.getCallback(), requestEntity, String.class);
                 future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
             } catch (Exception e) {
                 log.error("Errore durante l'esecuzione della callback per {} a {}: {}", cacheKey, savedInvoice.getCallback(), e.getMessage());
@@ -109,7 +116,9 @@ public class ReceiverServiceImpl implements IReceiverService {
 
     @Override
     public void handleUpdatedInvoice(SdiNotificationDto sdiNotificationDto) {
-        String cacheKey = buildCacheKey(sdiNotificationDto.getCustomerId(), sdiNotificationDto.getInvoiceNumber());
+
+        sdiNotificationDto.setUpdatedAt(LocalDateTime.now());
+        String cacheKey = buildCacheKey(sdiNotificationDto.getCustomerId(), sdiNotificationDto.getCorrelationId());
 
         CompletableFuture<ResponseEntity<ResponseDto>> future = asyncResponseCache.remove(cacheKey);
 
@@ -128,11 +137,17 @@ public class ReceiverServiceImpl implements IReceiverService {
         future.complete(createSuccessResponse(ReceiverConstants.MESSAGE_200, HttpStatus.OK));
     }
 
-    private ResponseEntity<ResponseDto> processInvoice(InvoiceDto invoice, InvoiceStatus status, String topic) {
+    private ResponseEntity<ResponseDto> processInvoice(InvoiceDto invoice, InvoiceStatus status) {
         invoice.setInvoiceStatus(status);
         invoice.setStatusLastUpdatedAt(LocalDateTime.now());
+        if(InvoiceStatus.EXTERNAL_INVOICE.equals(invoice.getInvoiceStatus())
+                || InvoiceStatus.INTERNAL_INVOICE_NEW.equals(invoice.getInvoiceStatus())){
+            invoice.setCreatedAt(LocalDateTime.now());
+        }else{
+            invoice.setUpdatedAt(LocalDateTime.now());
+        }
 
-        String cacheKey = buildCacheKey(invoice.getCustomer().getCustomerId(), invoice.getInvoiceNumber());
+        String cacheKey = buildCacheKey(invoice.getCustomer().getCustomerId(), invoice.getCorrelationId());
         log.info("Processando fattura {}. Stato: {}. In attesa di salvataggio DB.", cacheKey, status);
 
         // Creiamo il future per la gestione asincrona (timeout/callback)
@@ -140,7 +155,7 @@ public class ReceiverServiceImpl implements IReceiverService {
         asyncResponseCache.put(cacheKey, future);
 
         try {
-            boolean sent = streamBridge.send(topic, invoice);
+            boolean sent = streamBridge.send("publishInvoice-out-0", invoice);
             if (!sent) {
                 log.error("Errore nell'invio Kafka della fattura {}", cacheKey);
                 // Rimuoviamo il future dalla cache se l'invio fallisce subito
@@ -163,7 +178,7 @@ public class ReceiverServiceImpl implements IReceiverService {
         }
     }
 
-    public static String buildCacheKey(Integer customerId, Integer invoiceNumber) {
+    public static String buildCacheKey(Integer customerId, String invoiceNumber) {
         return (customerId != null ? customerId : "NA") + "-" + (invoiceNumber != null ? invoiceNumber : "NA");
     }
 

@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS invoice (
   updated_at date DEFAULT NULL,
   updated_by varchar(20) DEFAULT NULL,
   status_last_updated_at date DEFAULT NULL,
-  callback varchar(256) DEFAULT NULL
+  callback varchar(256) DEFAULT NULL,
+  correlation_id varchar(100) NOT NULL,
 );
 
 -- Indexes for invoice table
@@ -36,6 +37,7 @@ CREATE INDEX IF NOT EXISTS IDX_INVOICE_STATUS_NUMBER ON invoice (invoice_status,
 CREATE INDEX IF NOT EXISTS IDX_INVOICE_STATUS ON invoice (invoice_status);
 CREATE INDEX IF NOT EXISTS IDX_INVOICE_CREATED_AT ON invoice (created_at);
 CREATE INDEX IF NOT EXISTS IDX_INVOICE_STATUS_SENT_AT ON invoice (invoice_status, status_last_updated_at);
+CREATE INDEX IF NOT EXISTS IDX_CORRELATION_ID ON invoice (correlation_id);
 
 --
 -- Seed data for customer table

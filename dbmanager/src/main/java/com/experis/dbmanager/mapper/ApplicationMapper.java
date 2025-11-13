@@ -2,6 +2,7 @@ package com.experis.dbmanager.mapper;
 
 import com.experis.dbmanager.dto.CustomerDto;
 import com.experis.dbmanager.dto.InvoiceDto;
+import com.experis.dbmanager.dto.SdiNotificationDto;
 import com.experis.dbmanager.entity.Customer;
 import com.experis.dbmanager.enumerations.CustomerType;
 import com.experis.dbmanager.entity.Invoice;
@@ -59,6 +60,7 @@ public class ApplicationMapper {
         invoiceDto.setCustomer(toCustomerDto(customer));
         invoiceDto.setCallback(invoice.getCallback());
         invoiceDto.setStatusLastUpdatedAt(invoice.getStatusLastUpdatedAt());
+        invoiceDto.setCorrelationId(invoice.getCorrelationId());
         return invoiceDto;
     }
 
@@ -79,6 +81,25 @@ public class ApplicationMapper {
         }
         invoice.setCallback(invoiceDto.getCallback());
         invoice.setStatusLastUpdatedAt(invoiceDto.getStatusLastUpdatedAt());
+        invoice.setCorrelationId(invoiceDto.getCorrelationId());
+        return invoice;
+    }
+
+    public Invoice toInvoice(SdiNotificationDto notificationDto) {
+        if (notificationDto == null) {
+            return null;
+        }
+        Invoice invoice = new Invoice();
+        invoice.setInvoiceNumber(notificationDto.getInvoiceNumber());
+        invoice.setInvoiceStatus(notificationDto.getStatus());
+        invoice.setCreatedAt(notificationDto.getCreatedAt());
+        invoice.setCreatedBy(notificationDto.getCreatedBy());
+        invoice.setUpdatedAt(notificationDto.getUpdatedAt());
+        invoice.setUpdatedBy(notificationDto.getUpdatedBy());
+        if (notificationDto.getCustomerId() != null) {
+            invoice.setCustomerId(notificationDto.getCustomerId());
+        }
+        invoice.setCorrelationId(notificationDto.getCorrelationId());
         return invoice;
     }
 

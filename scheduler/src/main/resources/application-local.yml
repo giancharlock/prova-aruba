@@ -55,12 +55,10 @@ info:
 
 logging:
   level:
-    com:
-      experis:
-        sender: DEBUG # Package name originale
-    org:
-      apache:
-        kafka: WARN
+    com.experis.sender: DEBUG # Package name originale
+    org.apache.kafka: WARN
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-},%X{trace_id},%X{span_id}]  [%t]"
 
 # Proprietà personalizzate per i Job dello Scheduler
 app:

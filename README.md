@@ -154,18 +154,7 @@ Punto di autenticazione/autorizzazione e ingresso dall'esterno
 ---
 ## Comandi utili
 
-#### Creazione DB
-In folder docker-compose:
-docker compose up  postgres -d
-#### Creazione configuration server
-In folder docker-compose:
-docker compose up  xxx -d
-#### Creazione eurekaserver
-In folder docker-compose:
-docker compose up  eurekaserver -d
-#### Creazione kafka
-In folder docker-compose:
-docker compose up  kafka -d
+Per le callback è possibile usare servizi come [hookdeck.com] (https://hookdeck.com/)
 
 #### Compilazione immagine docker
 mvn compile jib:dockerBuild

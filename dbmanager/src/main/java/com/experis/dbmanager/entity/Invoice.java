@@ -35,4 +35,7 @@ public class Invoice extends BaseEntity {
     @Column(name="callback")
     private String callback;
 
+    @Column(name="correlation_id")
+    private String correlationId;
+
 }
