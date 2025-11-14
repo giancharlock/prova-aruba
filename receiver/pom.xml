@@ -18,12 +18,18 @@
         <gatling.version>3.11.3</gatling.version>
         <gatling-maven-plugin.version>4.9.0</gatling-maven-plugin.version>
         <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
+        <scala.version>2.13.14</scala.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.experis</groupId>
             <artifactId>commons</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
         <dependency>
@@ -93,7 +99,13 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Gatling Dependencies -->
+        <!-- Gatling and Scala Dependencies -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.gatling.highcharts</groupId>
             <artifactId>gatling-charts-highcharts</artifactId>
@@ -123,18 +135,6 @@
                         <image>giancharlock/${project.artifactId}:s1</image>
                     </to>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>${scala-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>io.gatling</groupId>

@@ -34,7 +34,7 @@ class ReceiverLoadSdiNotificationsTest extends Simulation {
 
   // Definizione degli scenari
 
-  val sdiNotification = scenario("Salva Fattura Interna")
+  val sdiNotification = scenario("SDI Notification")
     .feed(invoiceFeeder)
     .exec(
       http("sdi_notification")

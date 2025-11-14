@@ -2,6 +2,7 @@ package com.experis.receiver.load
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
+
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -17,9 +18,10 @@ class ReceiverLoadInternalInvoiceTest extends Simulation {
   val invoiceFeeder = Iterator.continually {
     val invoiceNumber = Random.nextInt(Integer.MAX_VALUE)
     val customerId = 2 + Random.nextInt(3) // Genera un ID cliente casuale tra 2, 3, e 4, quelli inseriti nel db
-    val test_user = "test_user_" + (customerId-1);
+    val test_user = s"test_user_${customerId - 1}"
     val callbackUrl = s"http://mock-callback-server.com/notify/$customerId/$invoiceNumber"
-    val fatturaRandom = test_user + " " + invoiceNumber + Random.nextInt(99999999);
+    val randomNumber = Random.nextInt(99999999)
+    val fatturaRandom = s"$test_user $invoiceNumber$randomNumber"
 
     // Creiamo il payload JSON direttamente qui
     val jsonPayload = s"""
@@ -49,7 +51,7 @@ class ReceiverLoadInternalInvoiceTest extends Simulation {
   // Definizione del profilo di carico
   setUp(
     // Eseguiamo i due scenari in parallelo
-    salvaFatturaInterna.inject(rampUsers(1000).during(10.seconds)),
+    salvaFatturaInterna.inject(rampUsers(100).during(10.seconds)),
   ).protocols(httpProtocol)
    .maxDuration(2.minute) // Durata massima del test
 

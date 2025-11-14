@@ -1,0 +1,19 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9096
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    com.experis.scheduler: DEBUG
+    org.apache.kafka: WARN
+
+app:
+  scheduler:
+    dbmanager-url: "http://localhost:9020/api"
+    dlt-report-path: "D:/WKS/EXPERIS/prova-aruba/scheduler/reports/dlt_report.csv"
+    invoice-report-path: "D:/WKS/EXPERIS/prova-aruba/scheduler/reports/invoice_status_report.csv"

@@ -14,13 +14,16 @@ class ReceiverLoadInternalInvoiceTest1 extends Simulation {
     .acceptHeader("application/json")
     .contentTypeHeader("application/json")
 
+  val arubaToken = "aruba-secret-token"
+
   // Generatore di dati dinamici (Feeder)
   val invoiceFeeder = Iterator.continually {
     val invoiceNumber = Random.nextInt(Integer.MAX_VALUE)
     val customerId = 2 + Random.nextInt(3) // Genera un ID cliente casuale tra 2, 3, e 4, quelli inseriti nel db
-    val test_user = "test_user_" + (customerId-1);
+    val test_user = s"test_user_${customerId - 1}"
     val callbackUrl = s"http://mock-callback-server.com/notify/$customerId/$invoiceNumber"
-    val fatturaRandom = test_user + " " + invoiceNumber + Random.nextInt(99999999);
+    val randomNumber = Random.nextInt(99999999)
+    val fatturaRandom = s"$test_user $invoiceNumber$randomNumber"
 
     // Creiamo il payload JSON direttamente qui
     val jsonPayload = s"""

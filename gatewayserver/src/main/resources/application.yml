@@ -1,14 +1,12 @@
 server:
   port: 8072
 
-api:
-  security:
-    sdi-token: "sdi-secret-token"
-    aruba-token: "aruba-secret-token"
-
 spring:
   application:
     name: "gatewayserver"
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+
   session:
     store-type: redis
   cloud:
@@ -35,7 +33,7 @@ spring:
   data:
     redis:
       connect-timeout: 2s
-      host: redis
+      host: ${spring.data.redis.host:redis}
       port: 6379
       timeout: 1s
 
@@ -62,8 +60,8 @@ info:
 
 logging:
   level:
-    com.experis.gatewayserver: DEBUG
-    org.springframework.cloud.gateway: DEBUG
+    com.experis.gatewayserver: ${logging.level.com.experis.gatewayserver:DEBUG}
+    org.springframework.cloud.gateway: ${logging.level.org.springframework.cloud.gateway:DEBUG}
   pattern:
     level: "%5p [${spring.application.name},%X{correlationId:-},%X{trace_id},%X{span_id}]  [%t]"
 
@@ -78,4 +76,4 @@ resilience4j.circuitbreaker:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://eurekaserver:8761/eureka/
+      defaultZone: ${eureka.client.serviceUrl.defaultZone:http://eurekaserver:8761/eureka/}

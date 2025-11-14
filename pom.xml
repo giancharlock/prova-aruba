@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version> <!-- Downgraded to stable version -->
+        <version>3.4.3</version>
         <relativePath/>
     </parent>
 
@@ -15,8 +15,8 @@
     <artifactId>prova-invoice-manager</artifactId>
     <version>1.0.2</version>
     <packaging>pom</packaging>
-    <name>prova-aruba</name>
-    <description>Parent POM for Prova Aruba project</description>
+    <name>prova-invoice-manager</name>
+    <description>Parent POM for Prova invoice manager project</description>
 
     <modules>
         <module>commons</module>
@@ -27,7 +27,6 @@
         <module>scheduler</module>
         <module>eurekaserver</module>
         <module>gatewayserver</module>
-        <module>configserver</module>
     </modules>
 
     <properties>
@@ -59,11 +58,6 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.experis</groupId>
-                <artifactId>commons</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.javaagent</groupId>

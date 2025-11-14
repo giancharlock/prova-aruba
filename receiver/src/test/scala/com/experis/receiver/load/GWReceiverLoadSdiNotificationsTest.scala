@@ -21,14 +21,15 @@ class GWReceiverLoadSdiNotificationsTest extends Simulation {
     val invoiceNumber = Random.nextInt(Integer.MAX_VALUE)
     val customerId = 1
     val statusVect = List("INTERNAL_INVOICE_DELIVERED", "INTERNAL_INVOICE_DISCARDED", "INTERNAL_INVOICE_NOT_DELIVERED")
-    val statusVectIndex = Random.nextInt(2);
+    val statusVectIndex = Random.nextInt(3);
+    val status = statusVect(statusVectIndex)
 
     // Creiamo il payload JSON direttamente qui
     val jsonPayload = s"""
       {
-        "invoiceNumber": $invoiceNumber,
+        "invoiceNumber": "$invoiceNumber",
         "customerId": $customerId,
-        "status": $statusVect[$statusVectIndex];
+        "status": "$status"
       }
       """
     Map("jsonPayload" -> jsonPayload)
@@ -36,7 +37,7 @@ class GWReceiverLoadSdiNotificationsTest extends Simulation {
 
   // Definizione degli scenari
 
-  val sdiNotification = scenario("Salva Fattura Interna")
+  val sdiNotification = scenario("SDI Notification")
     .feed(invoiceFeeder)
     .exec(
       http("sdi_notification")

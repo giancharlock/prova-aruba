@@ -1,0 +1,21 @@
+spring:
+  mail:
+    host: mailhog
+  kafka:
+    bootstrap-servers: kafka:9092
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: kafka:9092
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eurekaserver:8761/eureka/
+
+logging:
+  level:
+    com.experis.sender: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.springframework.kafka: DEBUG

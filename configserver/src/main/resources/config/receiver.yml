@@ -1,0 +1,19 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9096
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9096
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    com.experis.receiver: DEBUG
+    org.springframework.cloud.stream: INFO
+    org.springframework.kafka: INFO

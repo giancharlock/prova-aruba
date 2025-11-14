@@ -11,10 +11,12 @@ spring:
       enabled: true
   application:
     name: "receiver"
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
 
   kafka:
     bootstrap-servers:
-      - kafka:9092
+      - ${spring.kafka.bootstrap-servers:kafka:9092}
     consumer:
       group-id: "receiver-dlt-consumer"
       auto-offset-reset: earliest
@@ -30,7 +32,7 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
-      function:
+    function:
       definition: savedInvoice;updatedInvoice
     stream:
       bindings:
@@ -54,7 +56,7 @@ spring:
       kafka:
         binder:
           brokers:
-            - kafka:9092
+            - ${spring.cloud.stream.kafka.binder.brokers:kafka:9092}
           producer-properties:
             retries: 3
             retry.backoff.ms: 1000
@@ -77,7 +79,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://eurekaserver:8761/eureka/
+      defaultZone: ${eureka.client.serviceUrl.defaultZone:http://eurekaserver:8761/eureka/}
 
 management:
   endpoints:
@@ -110,9 +112,9 @@ info:
 
 logging:
   level:
-    com.experis.receiver: DEBUG
-    org.springframework.cloud.stream: DEBUG
-    org.springframework.kafka: DEBUG
+    com.experis.receiver: ${logging.level.com.experis.receiver:DEBUG}
+    org.springframework.cloud.stream: ${logging.level.org.springframework.cloud.stream:DEBUG}
+    org.springframework.kafka: ${logging.level.org.springframework.kafka:DEBUG}
   pattern:
     level: "%5p [${spring.application.name},%X{correlationId:-},%X{trace_id},%X{span_id}]  [%t]"
 

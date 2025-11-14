@@ -189,6 +189,7 @@ http://localhost:8025/ per visualizzare le spedizioni effettuate
 http://localhost:9020/swagger-ui/ o più in generale http://localhost:XXXX/swagger-ui/
 Porte dei microservizi:
 eurekaserver: 8761
+configserver: 8888
 receiver: 8080
 dbmanager: 9020
 sender: 9010

@@ -1,0 +1,40 @@
+api:
+  security:
+    sdi-token: "sdi-secret-token"
+    aruba-token: "aruba-secret-token"
+
+spring:
+  data:
+    redis:
+      host: localhost
+  cloud:
+    gateway:
+      routes:
+        # Le rotte per i servizi sono gestite da Spring Security in SecurityConfig.java
+        # Queste rotte servono solo per il discovery e il load balancing.
+        - id: receiver_route
+          uri: lb://receiver
+          predicates:
+            - Path=/receiver/**
+        - id: sender_route
+          uri: lb://sender
+          predicates:
+            - Path=/sender/**
+        - id: dbmanager_route
+          uri: lb://dbmanager
+          predicates:
+            - Path=/dbmanager/**
+        - id: scheduler_route
+          uri: lb://scheduler
+          predicates:
+            - Path=/scheduler/**
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    com.experis.gatewayserver: INFO
+    org.springframework.cloud.gateway: INFO
