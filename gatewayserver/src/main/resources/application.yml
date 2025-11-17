@@ -63,7 +63,7 @@ logging:
     com.experis.gatewayserver: ${logging.level.com.experis.gatewayserver:DEBUG}
     org.springframework.cloud.gateway: ${logging.level.org.springframework.cloud.gateway:DEBUG}
   pattern:
-    level: "%5p [${spring.application.name},%X{correlationId:-},%X{trace_id},%X{span_id}]  [%t]"
+    level: "%5p [${spring.application.name},%X{trace_id:trace_id},%X{span_id:span_id}] [%X{correlationId:c_id}] [%t]"
 
 resilience4j.circuitbreaker:
   configs:

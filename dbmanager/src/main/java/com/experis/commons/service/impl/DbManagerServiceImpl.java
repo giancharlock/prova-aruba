@@ -153,7 +153,7 @@ public class DbManagerServiceImpl implements IDbManagerService {
                 () -> new ResourceNotFoundException("Invoice", "invoiceNumber", String.valueOf(invoiceNumber))
         );
         invoice.setInvoiceStatus(invoiceDto.getInvoiceStatus());
-        invoice.setInvoice(invoiceDto.getInvoice());
+        invoice.setCorrelationId(invoiceDto.getCorrelationId());
         invoice.setUpdatedAt(LocalDateTime.now());
         Invoice updatedInvoice = invoiceRepository.save(invoice);
         Customer customer = customerRepository.findById(updatedInvoice.getCustomerId()).orElseThrow(

@@ -59,7 +59,7 @@ logging:
     com.experis.scheduler: ${logging.level.com.experis.scheduler:DEBUG}
     org.apache.kafka: ${logging.level.org.apache.kafka:WARN}
   pattern:
-    level: "%5p [${spring.application.name},%X{correlationId:-},%X{trace_id},%X{span_id}]  [%t]"
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}] [%t]"
 
 app:
   scheduler:
