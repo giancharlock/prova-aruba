@@ -1,6 +1,6 @@
 package com.experis.gatewayserver.filters;
 
-import com.experis.dbmanager.constants.Constants;
+import com.experis.commons.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

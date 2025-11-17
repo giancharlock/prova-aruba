@@ -1,7 +1,7 @@
 package com.experis.receiver.service.consumer;
 
-import com.experis.dbmanager.dto.InvoiceDto;
-import com.experis.dbmanager.dto.SdiNotificationDto;
+import com.experis.commons.dto.InvoiceDto;
+import com.experis.commons.dto.SdiNotificationDto;
 import com.experis.receiver.service.IReceiverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

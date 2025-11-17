@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
@@ -52,10 +52,10 @@ class ScheduledJobsTest {
 
     // Questi bean vengono "mockati" (sostituiti con versioni finte)
     // per isolare il test alla sola logica del Job.
-    @MockBean
+    @Mock
     private ReportService reportService;
 
-    @MockBean
+    @Mock
     private DbManagerClient dbManagerClient;
 
     private String dltTopic = "test-dlt-job.DLT";

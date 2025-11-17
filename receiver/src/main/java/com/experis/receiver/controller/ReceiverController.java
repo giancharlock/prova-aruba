@@ -1,9 +1,9 @@
 package com.experis.receiver.controller;
 
-import com.experis.dbmanager.dto.InvoiceDto;
-import com.experis.dbmanager.dto.ResponseDto;
-import com.experis.dbmanager.dto.SdiNotificationDto;
-import com.experis.dbmanager.dto.ErrorResponseDto;
+import com.experis.commons.dto.InvoiceDto;
+import com.experis.commons.dto.ResponseDto;
+import com.experis.commons.dto.SdiNotificationDto;
+import com.experis.commons.dto.ErrorResponseDto;
 import com.experis.receiver.service.IReceiverService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

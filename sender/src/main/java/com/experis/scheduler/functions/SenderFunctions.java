@@ -1,7 +1,7 @@
 package com.experis.scheduler.functions;
 
-import com.experis.dbmanager.dto.InvoiceDto;
-import com.experis.dbmanager.enumerations.InvoiceStatus;
+import com.experis.commons.dto.InvoiceDto;
+import com.experis.commons.enumerations.InvoiceStatus;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.function.StreamBridge;
