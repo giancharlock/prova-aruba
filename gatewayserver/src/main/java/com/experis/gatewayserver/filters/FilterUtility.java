@@ -14,15 +14,15 @@ public class FilterUtility {
 
     private static final Logger logger = LoggerFactory.getLogger(FilterUtility.class);
 
-    public String getCorrelationId(HttpHeaders requestHeaders) {
+    public String getCorrelationId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public String getEexistingCorrelatinId(HttpHeaders requestHeaders) {
         String correlationId = requestHeaders.getFirst(Constants.CORRELATION_ID_HEADER);
         if (correlationId == null) {
-            correlationId = UUID.randomUUID().toString();
-            logger.debug("X-Correlation-ID NOT FOUND in RequestTraceFilter, generating one {}",correlationId);
-        }else{
-            logger.debug("X-Correlation-ID FOUND in RequestTraceFilter {}",correlationId);
+            return null;
         }
-
         return correlationId;
     }
 

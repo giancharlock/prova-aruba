@@ -1,5 +1,6 @@
 # Contenuto di dbmanager-local.yml nel repository del Config Server
-
+server:
+  address: 0.0.0.0
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/invoice

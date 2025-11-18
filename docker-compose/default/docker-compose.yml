@@ -141,7 +141,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../observability/prometheus/prometheus-default.yml:/etc/prometheus/prometheus.yml
     extends:
       file: common-config.yml
       service: network-deploy-service

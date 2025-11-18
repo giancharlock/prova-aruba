@@ -54,8 +54,11 @@ public class ReceiverController {
             )
     })
     @PostMapping("/salvaFatturaInterna")
-    public ResponseEntity<ResponseDto> salvaFatturaInterna(@Valid @RequestBody InvoiceDto invoiceDto) {
+    public ResponseEntity<ResponseDto> salvaFatturaInterna(
+            @Valid @RequestBody InvoiceDto invoiceDto,
+            @RequestHeader("X-Correlation-ID") String correlationId ) {
         log.debug("Ricevuta richiesta salvaFatturaInterna");
+        invoiceDto.setCorrelationId(correlationId);
         // Ora restituisce direttamente la risposta (es. 202 o errore)
         return iReceiverService.saveInternalInvoice(invoiceDto);
     }
@@ -82,8 +85,11 @@ public class ReceiverController {
             )
     })
     @PostMapping("/salvaFatturaEsterna")
-    public ResponseEntity<ResponseDto> salvaFatturaEsterna(@Valid @RequestBody InvoiceDto invoiceDto) {
+    public ResponseEntity<ResponseDto> salvaFatturaEsterna(
+            @Valid @RequestBody InvoiceDto invoiceDto,
+            @RequestHeader("X-Correlation-ID") String correlationId ) {
         log.debug("Ricevuta richiesta salvaFatturaEsterna");
+        invoiceDto.setCorrelationId(correlationId);
         return iReceiverService.saveExternalInvoice(invoiceDto);
     }
 
@@ -109,8 +115,11 @@ public class ReceiverController {
             )
     })
     @PostMapping("/notificaSdI")
-    public ResponseEntity<ResponseDto> notificaSdI(@Valid @RequestBody SdiNotificationDto notificationDto) {
+    public ResponseEntity<ResponseDto> notificaSdI(
+            @Valid @RequestBody SdiNotificationDto notificationDto,
+            @RequestHeader("X-Correlation-ID") String correlationId ) {
         log.debug("Ricevuta richiesta notificaSdI");
+        notificationDto.setCorrelationId(correlationId);
         return iReceiverService.handleSdiNotification(notificationDto);
     }
 }

@@ -1,3 +1,6 @@
+server:
+  address: 0.0.0.0
+
 api:
   security:
     sdi-token: "sdi-secret-token"

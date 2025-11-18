@@ -1,31 +1,38 @@
 package com.experis.sender.config;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.kafka.DefaultKafkaProducerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Configuration
-public class KafkaProducerConfig implements BeanPostProcessor {
+public class KafkaProducerConfig {
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof ProducerFactory) {
-            ProducerFactory<?, ?> producerFactory = (ProducerFactory<?, ?>) bean;
-            Map<String, Object> props = producerFactory.getConfigurationProperties();
+    private static final String INTERCEPTOR_CLASS = "com.experis.sender.interceptor.CorrelationIdProducerInterceptor";
 
-            List<String> interceptors = (List<String>) props.getOrDefault(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, new ArrayList<>());
-            if (!interceptors.contains("com.experis.sender.interceptor.CorrelationIdProducerInterceptor")) {
-                interceptors.add("com.experis.sender.interceptor.CorrelationIdProducerInterceptor");
+    @Bean
+    public DefaultKafkaProducerFactoryCustomizer producerFactoryCustomizer() {
+        return producerFactory -> {
+            if (producerFactory instanceof DefaultKafkaProducerFactory) {
+                DefaultKafkaProducerFactory<?, ?> factory = (DefaultKafkaProducerFactory<?, ?>) producerFactory;
+
+                Map<String, Object> existingProps = new HashMap<>(factory.getConfigurationProperties());
+                List<String> interceptors = (List<String>) existingProps.getOrDefault(
+                        ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, new ArrayList<>()
+                );
+
+                if (!interceptors.contains(INTERCEPTOR_CLASS)) {
+                    interceptors.add(INTERCEPTOR_CLASS);
+                }
+
+                factory.updateConfigs(Map.of(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, interceptors));
             }
-
-            props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, interceptors);
-        }
-        return bean;
+        };
     }
 }

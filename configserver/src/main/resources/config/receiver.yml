@@ -1,3 +1,6 @@
+server:
+  address: 0.0.0.0
+
 spring:
   kafka:
     bootstrap-servers: localhost:9096
