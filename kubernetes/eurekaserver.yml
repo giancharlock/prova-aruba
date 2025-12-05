@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eurekaserver-deployment
+  labels:
+    app: eurekaserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eurekaserver
+  template:
+    metadata:
+      labels:
+        app: eurekaserver
+    spec:
+      containers:
+      - name: eurekaserver
+        image: giancharlock/eurekaserver:s1
+        ports:
+        - containerPort: 8761
+        env:
+        - name: SPRING_APPLICATION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: prova-invoice-configmap
+              key: EUREKA_APPLICATION_NAME
+      imagePullSecrets:
+      - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eurekaserver
+spec:
+  selector:
+    app: eurekaserver
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8761
+      targetPort: 8761

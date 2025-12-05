@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configserver-configmap
+data:
+  SPRING_PROFILES_ACTIVE: "native"
+  CONFIGSERVER_APPLICATION_NAME: "configserver"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prova-invoice-configmap
+data:
+  SPRING_PROFILES_ACTIVE: "docker"
+  SPRING_CONFIG_IMPORT: "configserver:http://configserver:8888/"
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8761/eureka/"
+  CONFIGSERVER_APPLICATION_NAME: "configserver"
+  EUREKA_APPLICATION_NAME: "eurekaserver"
+  RECEIVER_APPLICATION_NAME: "receiver"
+  DBMANAGER_APPLICATION_NAME: "dbmanager"
+  SENDER_APPLICATION_NAME: "sender"
+  GATEWAY_APPLICATION_NAME: "gatewayserver"

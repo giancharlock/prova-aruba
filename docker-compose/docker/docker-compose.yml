@@ -175,7 +175,7 @@ services:
       - "3000:3000"
     volumes:
       - ../observability/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
-      - D:/grafana-data:/var/lib/grafana
+      - ./grafana-data:/var/lib/grafana
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
       interval: 10s
@@ -277,7 +277,7 @@ services:
       POSTGRES_PASSWORD: invoice_pwd
       POSTGRES_DB: invoice
     volumes:
-      - D:/postgres_invoice_data:/var/lib/postgresql/data # Volume per persistere i dati
+      - ./postgres_invoice_data:/var/lib/postgresql/data # Volume per persistere i dati
       - ../../dbmanager/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432" # Esponi la porta del DB all'host (opzionale, utile per debug)
@@ -295,6 +295,23 @@ services:
     extends:
       file: common-config.yml
       service: network-deploy-service
+
+  configserver:
+    image: "giancharlock/configserver:s1"
+    container_name: configserver-ms
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: "curl --fail --silent localhost:8888/actuator/health/readiness | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    extends:
+      file: common-config.yml
+      service: microservice-base-config
+    environment:
+      OTEL_SERVICE_NAME: "configserver"
 
   eurekaserver:
     image: "giancharlock/eurekaserver:s1"
@@ -415,6 +432,8 @@ volumes:
   kafka_data:
     driver: local
   grafana-data:
+    driver: local
+  postgres_invoice_data:
     driver: local
 
 networks:

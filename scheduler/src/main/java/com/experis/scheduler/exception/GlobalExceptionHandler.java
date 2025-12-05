@@ -1,6 +1,6 @@
 package com.experis.scheduler.exception;
 
-import com.experis.dbmanager.dto.ErrorResponseDto;
+import com.experis.commons.dto.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
