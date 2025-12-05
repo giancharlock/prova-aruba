@@ -37,3 +37,4 @@ build/
 /docker-compose/default/.data/
 /scheduler/reports/dlt_report.csv
 /docker-compose/docker/.data/
+/docker-compose/docker/grafana-data/grafana.db
